@@ -5,6 +5,10 @@
 
 ---
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=TownBoats/codeMerge&type=Date)](https://www.star-history.com/#TownBoats/codeMerge&Date)
+
 # 代码文件内容提取与统计工具
 
 一个用于提取和统计代码文件内容的Web工具，特别适合准备用于大语言模型（如GPT、Claude）的代码分析。
