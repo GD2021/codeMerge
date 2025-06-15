@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Code File Content Extraction and Statistics Tool</title>
@@ -8,1347 +9,394 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
-    <style>
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 300px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        .file-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        /* 添加新的样式 */
-        .upload-area {
-            border: 2px dashed #CBD5E0;
-            transition: all 0.3s ease;
-        }
-        .upload-area:hover {
-            border-color: #4299E1;
-            background-color: #EBF8FF;
-        }
-        .progress-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: .5;
-            }
-        }
-    </style>
-    <script>
-        let encoder;
-        // 等待加载完成
-        window.addEventListener('load', async () => {
-            try {
-                // 初始化编码器
-                encoder = await window.gpt3TokenizerImport;
-            } catch (error) {
-                console.error('Failed to load tokenizer:', error);
-            }
-        });
-
-        // 从.gitignore读取忽略规则
-        async function readGitignoreFile(directoryEntry) {
-            return new Promise((resolve, reject) => {
-                if (!directoryEntry || !directoryEntry.createReader) {
-                    resolve('');
-                    return;
-                }
-                directoryEntry.getFile('.gitignore', {}, 
-                    fileEntry => {
-                        fileEntry.file(file => {
-                            const reader = new FileReader();
-                            reader.onload = e => resolve(e.target.result);
-                            reader.onerror = e => reject(e);
-                            reader.readAsText(file);
-                        });
-                    },
-                    error => resolve('') // 如果没有.gitignore文件，返回空字符串
-                );
-            });
-        }
-
-        // 解析.gitignore内容为过滤规则
-        function parseGitignoreRules(gitignoreContent) {
-            if (!gitignoreContent) return [];
-            
-            // 按行分割
-            const lines = gitignoreContent.split(/\r?\n/);
-            
-            // 过滤掉空行和注释
-            return lines
-                .map(line => line.trim())
-                .filter(line => line && !line.startsWith('#'))
-                .map(rule => {
-                    // 处理规则，移除开头的!（取反规则暂不处理）
-                    if (rule.startsWith('!')) return null; // 暂不处理取反规则
-                    
-                    // 删除开头的/，它表示根目录匹配
-                    let processedRule = rule.startsWith('/') ? rule.substring(1) : rule;
-                    
-                    // 处理目录指示符（尾部的/）
-                    if (processedRule.endsWith('/')) {
-                        processedRule = processedRule.slice(0, -1);
-                    }
-                    
-                    return processedRule;
-                })
-                .filter(Boolean); // 过滤掉null值
-        }
-
-        // 检查文件是否应该根据.gitignore规则被排除
-        function shouldExcludeByGitignoreRules(filePath, gitignoreRules) {
-            return gitignoreRules.some(rule => {
-                // 简单的通配符转换为正则表达式
-                let regexRule = rule
-                    .replace(/\./g, '\\.')      // 转义点
-                    .replace(/\*\*/g, '.*')     // **匹配任意字符
-                    .replace(/\*/g, '[^/]*')    // *匹配单层目录内的任意字符
-                    .replace(/\?/g, '[^/]');    // ?匹配单个字符
-                
-                const regex = new RegExp(`(^|/)${regexRule}(/|$)`);
-                return regex.test(filePath);
-            });
-        }
-    </script>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/inHead.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <!-- 添加语言切换按钮 -->
-        <div class="flex justify-end mb-4">
-            <button id="langToggle" 
+
+<body class="bg-neutral-50 min-h-screen">
+    <!-- 顶部固定导航栏 -->
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-gray-800" data-lang="title">Code Stats</h1>
+            </div>
+            <button id="langToggle"
                 class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors">
                 中文
             </button>
         </div>
+    </header>
 
-        <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center" data-lang="title">Code File Content Extraction and Statistics Tool</h1>
-        <p class="text-gray-600 text-center mb-8 max-w-2xl mx-auto" data-lang="description">这是一个帮助你分析代码文件的工具。可以统计字符数、计算不同模型的Token数量，并支持导出合并后的内容。适用于需要估算API调用成本或批量处理代码文件的场景。</p>
-        
-        <div class="bg-white rounded-xl shadow-lg p-8 mb-6 space-y-6">
-            <!-- 文件上传区域 -->
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="upload-area rounded-lg p-6 text-center">
-                    <label class="block text-lg font-medium text-gray-700 mb-4" data-lang="folderUpload">文件夹上传</label>
-                    <input type="file" id="folderInput" webkitdirectory directory multiple
-                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                    <p class="text-sm text-gray-500 mt-2" data-lang="folderUploadDesc">选择整个文件夹进行分析</p>
-                </div>
-                
-                <div class="upload-area rounded-lg p-6 text-center">
-                    <label class="block text-lg font-medium text-gray-700 mb-4" data-lang="fileUpload">文件上传</label>
-                    <input type="file" id="fileInput" multiple
-                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                    <p class="text-sm text-gray-500 mt-2" data-lang="fileUploadDesc">选择一个或多个文件</p>
-                </div>
-            </div>
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 说明文字 -->
+        <div class="text-center mb-8">
+            <p class="text-gray-600 max-w-3xl mx-auto" data-lang="description">
+                这是一个帮助你分析代码文件的工具。可以统计字符数、计算不同模型的Token数量，并支持导出合并后的内容。适用于需要估算API调用成本或批量处理代码文件的场景。
+            </p>
+        </div>
 
-            <!-- 添加gitignore上传区域 -->
-            <div class="grid md:grid-cols-1 gap-4">
-                <div class="upload-area rounded-lg p-4 text-center">
-                    <label class="block text-lg font-medium text-gray-700 mb-2" data-lang="gitignoreUpload">.gitignore上传</label>
-                    <div class="flex items-center">
-                        <input type="file" id="gitignoreInput" accept=".gitignore,*"
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                        <button onclick="processGitignoreFile()" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-2">
-                            <span data-lang="applyGitignore">应用</span>
-                        </button>
+        <!-- 左右两列布局 -->
+        <div class="grid lg:grid-cols-12 gap-6">
+            <!-- 左侧：流程步骤 -->
+            <section class="lg:col-span-8 space-y-6">
+                <!-- 步骤1：文件上传 -->
+                <article class="card-step" id="stepUpload">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepUpload">选择文件</h2>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2" data-lang="gitignoreUploadDesc">上传.gitignore文件，自动应用到黑名单设置</p>
-                </div>
-            </div>
-
-            <!-- 选中文件列表 -->
-            <div id="selectedFiles" class="file-list mt-6 border rounded-lg p-4 hidden bg-gray-50">
-                <h3 class="text-lg font-medium text-gray-700 mb-3" data-lang="selectedFiles">已选择的文件</h3>
-                <div id="fileList" class="space-y-2">
-                    <!-- 文件列表将在这里动态显示 -->
-                </div>
-            </div>
-
-            <!-- 选项设置区域 -->
-            <div class="grid md:grid-cols-1 gap-6 p-4 bg-gray-50 rounded-lg">
-                <div class="space-y-4">
-                    <h3 class="text-lg font-medium text-gray-700" data-lang="codeProcessingOptions">代码处理选项</h3>
                     
-                    <!-- 处理模式选择 -->
-                    <div class="mb-4">
-                        <p class="text-sm font-medium text-gray-700 mb-2" data-lang="processingMode">处理模式：</p>
+                    <!-- 三个上传区域放在同一行 -->
+                    <div class="grid md:grid-cols-3 gap-4 mb-6">
+                        <div class="upload-area rounded-lg p-4 text-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="folderUpload">文件夹上传</label>
+                            <input type="file" id="folderInput" webkitdirectory directory multiple
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            <p class="text-xs text-gray-500 mt-2" data-lang="folderUploadDesc">选择整个文件夹进行分析</p>
+                        </div>
+
+                        <div class="upload-area rounded-lg p-4 text-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="fileUpload">文件上传</label>
+                            <input type="file" id="fileInput" multiple
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            <p class="text-xs text-gray-500 mt-2" data-lang="fileUploadDesc">选择一个或多个文件</p>
+                        </div>
+
+                        <div class="upload-area rounded-lg p-4 text-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="gitignoreUpload">.gitignore上传</label>
+                            <input type="file" id="gitignoreInput" accept=".gitignore,*"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer mb-2">
+                            <button onclick="processGitignoreFile()"
+                                class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
+                                <span data-lang="applyGitignore">应用</span>
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2" data-lang="gitignoreUploadDesc">上传.gitignore文件，自动应用到黑名单设置</p>
+                        </div>
+                    </div>
+
+                    <!-- 选中文件列表 -->
+                    <div id="selectedFiles" class="file-list mt-4 border rounded-lg p-4 hidden bg-gray-50">
+                        <h3 class="text-sm font-medium text-gray-700 mb-3" data-lang="selectedFiles">已选择的文件</h3>
+                        <div id="fileList" class="space-y-2">
+                            <!-- 文件列表将在这里动态显示 -->
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 步骤2：配置选项 -->
+                <article class="card-step" id="stepOptions">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepOptions">配置选项</h2>
+                    </div>
+
+                    <!-- 三列并排布局：基础选项、处理模式、高级设置 -->
+                    <div class="grid lg:grid-cols-3 gap-6">
+                        <!-- 基础选项 -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">基础选项</h4>
+                            <div class="space-y-3">
+                                <label class="flex items-center space-x-3 p-3 bg-white border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                    <input type="checkbox" id="compressCode" class="w-4 h-4 rounded text-blue-600">
+                                    <div>
+                                        <span class="text-gray-700 font-medium" data-lang="compressCode">压缩代码</span>
+                                        <p class="text-xs text-gray-500 mt-1" data-lang="compressCodeDesc">删除多余空格、换行等</p>
+                                    </div>
+                                </label>
+
+                                <label class="flex items-center space-x-3 p-3 bg-white border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                    <input type="checkbox" id="useGitignore" class="w-4 h-4 rounded text-blue-600" checked>
+                                    <div>
+                                        <span class="text-gray-700 font-medium" data-lang="useGitignore">使用.gitignore</span>
+                                        <p class="text-xs text-gray-500 mt-1" data-lang="useGitignoreDesc">读取忽略规则</p>
+                                    </div>
+                                </label>
+
+                                <label class="flex items-center space-x-3 p-3 bg-white border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                    <input type="checkbox" id="ignoreGit" class="w-4 h-4 rounded text-blue-600" checked>
+                                    <div>
+                                        <span class="text-gray-700 font-medium" data-lang="ignoreGit">忽略.git文件夹</span>
+                                        <p class="text-xs text-gray-500 mt-1" data-lang="ignoreGitDesc">跳过版本控制文件</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 处理模式选择 -->
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 mb-3" data-lang="processingMode">处理模式</p>
+                            <div class="space-y-3">
+                                <label class="flex items-center space-x-3 p-3 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                    <input type="radio" name="processingMode" id="modeFullProcess" value="full"
+                                        class="w-4 h-4 text-blue-600" checked>
+                                    <div>
+                                        <span class="text-gray-700 font-medium" data-lang="modeFullProcess">完整处理</span>
+                                        <p class="text-xs text-gray-500 mt-1" data-lang="modeFullProcessDesc">提取文件树和合并文件内容</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                    <input type="radio" name="processingMode" id="modeTreeOnly" value="treeOnly"
+                                        class="w-4 h-4 text-blue-600">
+                                    <div>
+                                        <span class="text-gray-700 font-medium" data-lang="modeTreeOnly">仅文件树</span>
+                                        <p class="text-xs text-gray-500 mt-1" data-lang="modeTreeOnlyDesc">只提取文件树结构，不处理文件内容</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 高级设置区域 -->
+                        <div class="space-y-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3" data-lang="advancedSettings">高级设置</h4>
+                            
+                            <!-- 黑名单设置 -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <h5 class="text-xs font-medium text-gray-700" data-lang="blacklistSettings">黑名单设置</h5>
+                                    <button onclick="saveBlacklist()"
+                                        class="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                                        <span data-lang="saveSettings">保存</span>
+                                    </button>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1" data-lang="blacklistFoldersDesc">忽略文件夹：</label>
+                                        <textarea id="blacklistInput" rows="2" class="w-full p-2 border rounded text-xs font-mono"
+                                            placeholder="每行一个文件夹名"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1" data-lang="blacklistExtDesc">忽略扩展名：</label>
+                                        <textarea id="blacklistExtInput" rows="2" class="w-full p-2 border rounded text-xs font-mono"
+                                            placeholder=".jpg\n.png\n.mp4"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div id="saveStatus" class="text-xs text-green-600 hidden">
+                                    <span class="text-green-500">✓</span>
+                                    <span data-lang="blacklistUpdated">已更新</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 支持的文件类型 -->
+                    <div class="bg-blue-50 p-3 rounded-lg mt-6">
+                        <h4 class="text-sm font-medium text-blue-800 mb-2" data-lang="supportedFileTypes">支持的文件类型</h4>
+                        <div class="grid md:grid-cols-2 gap-2 text-xs text-blue-700">
+                            <div>
+                                <p class="font-medium mb-1" data-lang="codeFiles">代码文件</p>
+                                <p>.js, .py, .java, .cpp, .h, .cs, .php, .rb, .swift, .go, .rs, .ts, .jsx, .tsx</p>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-1" data-lang="otherFiles">其他文件</p>
+                                <p>.json, .yaml, .yml, .xml, .toml, .ini, .conf, .txt, .log, .md, .csv</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 步骤3：开始处理 -->
+                <article class="card-step" id="stepStart">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepStart">开始处理</h2>
+                    </div>
+                    
+                    <button onclick="processFiles()"
+                        class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                        data-lang="startProcessing">
+                        <div class="flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                            </svg>
+                            <span data-lang="startProcessing">开始处理</span>
+                        </div>
+                    </button>
+                </article>
+            </section>
+
+            <!-- 右侧：状态和结果面板 -->
+            <aside class="lg:col-span-4 space-y-4 lg:sticky lg:top-24 lg:self-start" id="sidePanel">
+                <!-- 状态卡片 -->
+                <div id="statusCard" class="card-side">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">状态</h3>
+                    <div class="flex items-center space-x-2 text-gray-600">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <span class="text-sm">准备就绪</span>
+                    </div>
+                </div>
+
+                <!-- 进度卡片 -->
+                <div id="progressCard" class="card-side hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="processingProgress">处理进度</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300 progress-pulse" id="progressBar"
+                            style="width: 0%"></div>
+                    </div>
+                    <div id="progressText" class="text-sm text-gray-600 text-center font-medium">0%</div>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div id="statsCard" class="card-side hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="statistics">统计信息</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
+                            <span class="text-sm text-blue-800" data-lang="processedFiles">处理文件</span>
+                            <span id="totalFileCount" class="font-bold text-blue-600">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-green-50 rounded">
+                            <span class="text-sm text-green-800" data-lang="totalChars">总字符数</span>
+                            <span id="totalCharCount" class="font-bold text-green-600">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                            <span class="text-sm text-yellow-800" data-lang="skippedFiles">跳过文件</span>
+                            <span id="skippedFileCount" class="font-bold text-yellow-600">0</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3" data-lang="tokenStats">Token 统计</h4>
                         <div class="space-y-2">
-                            <label class="flex items-center space-x-3 p-2 bg-white rounded-lg shadow-sm">
-                                <input type="radio" name="processingMode" id="modeFullProcess" value="full" class="w-5 h-5 text-blue-600" checked>
-                                <div>
-                                    <span class="text-gray-700 font-medium" data-lang="modeFullProcess">完整处理</span>
-                                    <p class="text-sm text-gray-500 mt-1" data-lang="modeFullProcessDesc">提取文件树和合并文件内容</p>
-                                </div>
-                            </label>
-                            <label class="flex items-center space-x-3 p-2 bg-white rounded-lg shadow-sm">
-                                <input type="radio" name="processingMode" id="modeTreeOnly" value="treeOnly" class="w-5 h-5 text-blue-600">
-                                <div>
-                                    <span class="text-gray-700 font-medium" data-lang="modeTreeOnly">仅文件树</span>
-                                    <p class="text-sm text-gray-500 mt-1" data-lang="modeTreeOnlyDesc">只提取文件树结构，不处理文件内容</p>
-                                </div>
-                            </label>
+                            <div class="flex justify-between items-center p-2 bg-purple-50 rounded">
+                                <span class="text-xs text-purple-800">GPT-3.5</span>
+                                <span id="gpt3TokenCount" class="text-sm font-bold text-purple-600">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-indigo-50 rounded">
+                                <span class="text-xs text-indigo-800">GPT-4</span>
+                                <span id="gpt4TokenCount" class="text-sm font-bold text-indigo-600">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-pink-50 rounded">
+                                <span class="text-xs text-pink-800">Claude</span>
+                                <span id="claudeTokenCount" class="text-sm font-bold text-pink-600">0</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <label class="flex items-center space-x-3 p-2 bg-white rounded-lg shadow-sm">
-                        <input type="checkbox" id="compressCode" class="w-5 h-5 rounded text-blue-600">
-                        <div>
-                            <span class="text-gray-700 font-medium" data-lang="compressCode">压缩代码</span>
-                            <p class="text-sm text-gray-500 mt-1" data-lang="compressCodeDesc">删除多余空格、换行等，减少文件大小</p>
-                        </div>
-                    </label>
-                    
-                    <label class="flex items-center space-x-3 p-2 bg-white rounded-lg shadow-sm">
-                        <input type="checkbox" id="useGitignore" class="w-5 h-5 rounded text-blue-600" checked>
-                        <div>
-                            <span class="text-gray-700 font-medium" data-lang="useGitignore">使用.gitignore</span>
-                            <p class="text-sm text-gray-500 mt-1" data-lang="useGitignoreDesc">从项目中的.gitignore文件读取忽略规则</p>
-                        </div>
-                    </label>
-                    
-                    <label class="flex items-center space-x-3 p-2 bg-white rounded-lg shadow-sm">
-                        <input type="checkbox" id="ignoreGit" class="w-5 h-5 rounded text-blue-600" checked>
-                        <div>
-                            <span class="text-gray-700 font-medium" data-lang="ignoreGit">忽略.git文件夹</span>
-                            <p class="text-sm text-gray-500 mt-1" data-lang="ignoreGitDesc">跳过.git文件夹及其中的版本控制文件</p>
-                        </div>
-                    </label>
                 </div>
-            </div>
 
-            <!-- 添加黑名单设置区域 -->
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-gray-700" data-lang="blacklistSettings">黑名单设置</h3>
-                    <div class="flex items-center space-x-2">
-                        <span id="saveStatus" class="text-sm text-green-600 hidden transition-opacity duration-500">
-                            <span class="text-green-500">✓</span>
-                            <span data-lang="blacklistUpdated">黑名单设置已更新</span>
-                        </span>
-                        <button onclick="saveBlacklist()" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
-                            <span data-lang="saveSettings">保存设置</span>
+                <!-- 结果卡片 -->
+                <div id="resultCard" class="card-side hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="resultActions">处理结果</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-gray-700" data-lang="copyContent">合并内容</label>
+                                <button id="copyBtn"
+                                    class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors"
+                                    data-lang="copyBtn">复制</button>
+                            </div>
+                            <textarea id="copyArea" rows="4"
+                                class="w-full p-2 border rounded text-xs font-mono bg-gray-50" readonly
+                                placeholder="处理完成后的内容将显示在这里..." data-lang-placeholder="copyAreaPlaceholder"></textarea>
+                            <div id="copyStatus" class="text-xs text-green-600 mt-1 hidden" data-lang="copySuccess">已复制到剪贴板！</div>
+                        </div>
+                        <button id="downloadBtn"
+                            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span data-lang="downloadBtn">下载合并内容</span>
                         </button>
                     </div>
                 </div>
-                
-                <!-- 文件夹黑名单 -->
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600 mb-2" data-lang="blacklistFoldersDesc">这些文件夹将被自动跳过处理：</p>
-                    <textarea id="blacklistInput" rows="4" 
-                        class="w-full p-3 border rounded-lg text-sm font-mono"
-                        placeholder="每行输入一个文件夹名称"></textarea>
-                    <div class="text-sm text-gray-500 mt-1">
-                        <span data-lang="blacklistFolderTip">提示：每行输入一个文件夹名称，这些文件夹及其子文件夹中的文件将被跳过。</span>
-                    </div>
-                </div>
-                
-                <!-- 文件扩展名黑名单 -->
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600 mb-2" data-lang="blacklistExtDesc">这些扩展名的文件将被自动跳过处理：</p>
-                    <textarea id="blacklistExtInput" rows="4" 
-                        class="w-full p-3 border rounded-lg text-sm font-mono"
-                        placeholder=".jpg\n.png\n.mp4"></textarea>
-                    <div class="text-sm text-gray-500 mt-1">
-                        <span data-lang="blacklistExtTip">提示：每行输入一个文件扩展名（如 .jpg 或 jpg），这些扩展名的文件将被跳过。</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 支持的文件类型说明 -->
-            <div class="bg-blue-50 p-6 rounded-lg">
-                <h4 class="text-lg font-medium text-blue-800 mb-3" data-lang="supportedFileTypes">支持的文件类型</h4>
-                <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
-                    <div>
-                        <p class="font-medium mb-2" data-lang="codeFiles">代码文件</p>
-                        <p>.js, .py, .java, .cpp, .h, .cs, .php, .rb, .swift, .go, .rs, .ts, .jsx, .tsx</p>
+                <!-- 文件夹结构卡片 -->
+                <div id="folderStructureCard" class="card-side hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-lg font-semibold text-gray-800" data-lang="folderStructure">文件夹结构</h3>
+                        <button id="copyStructureBtn"
+                            class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors"
+                            data-lang="copyBtn">复制</button>
                     </div>
-                    <div>
-                        <p class="font-medium mb-2" data-lang="otherFiles">其他文件</p>
-                        <p>.json, .yaml, .yml, .xml, .toml, .ini, .conf, .txt, .log, .md, .csv</p>
-                    </div>
+                    <pre id="structureArea"
+                        class="w-full p-2 border rounded text-xs font-mono bg-gray-50 overflow-auto max-h-40"></pre>
+                    <div id="structureCopyStatus" class="text-xs text-green-600 mt-1 hidden" data-lang="copySuccess">已复制到剪贴板！</div>
                 </div>
-            </div>
+            </aside>
+        </div>
+    </main>
 
-            <button onclick="processFiles()" 
-                class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg" data-lang="startProcessing">
-                <span data-lang="startProcessing">开始处理</span>
+    <!-- 移动端底部操作栏 -->
+    <nav class="fixed bottom-0 inset-x-0 bg-white border-t shadow-lg lg:hidden z-10" id="mobileNav">
+        <div class="flex justify-around py-2">
+            <button onclick="scrollToSection('stepUpload')" class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-xs mt-1">上传</span>
+            </button>
+            <button onclick="scrollToSection('stepOptions')" class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-xs mt-1">设置</span>
+            </button>
+            <button onclick="processFiles()" class="flex flex-col items-center p-2 text-gray-600 hover:text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-xs mt-1">开始</span>
             </button>
         </div>
+    </nav>
 
-        <!-- 进度条 -->
-        <div id="progress" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="processingProgress">处理进度</h3>
-            <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-blue-600 h-3 rounded-full transition-all duration-300 progress-pulse" id="progressBar" style="width: 0%"></div>
-            </div>
-            <div id="progressText" class="text-sm text-gray-600 mt-3 text-center font-medium">0%</div>
+    <!-- 隐藏的原始元素，用于兼容现有JS -->
+    <div class="hidden">
+        <div id="progress" class="hidden">
+            <div id="progressBar" style="width: 0%"></div>
+            <div id="progressText">0%</div>
         </div>
-
-        <!-- 统计信息 -->
-        <div id="stats" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
-            <h3 class="text-lg font-semibold text-gray-800 mb-6" data-lang="statistics">统计信息</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
-                    <div class="text-sm font-medium text-blue-800" data-lang="processedFiles">处理文件数</div>
-                    <div id="totalFileCount" class="text-2xl font-bold text-blue-600">0</div>
-                </div>
-                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
-                    <div class="text-sm font-medium text-green-800" data-lang="totalChars">总字符数</div>
-                    <div id="totalCharCount" class="text-2xl font-bold text-green-600">0</div>
-                </div>
-                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-lg">
-                    <div class="text-sm font-medium text-yellow-800" data-lang="skippedFiles">跳过文件数</div>
-                    <div id="skippedFileCount" class="text-2xl font-bold text-yellow-600">0</div>
-                </div>
-            </div>
-            
-            <div class="mt-6">
-                <h4 class="text-lg font-medium text-gray-700 mb-4" data-lang="tokenStats">Token 统计</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-purple-800">GPT-3.5</div>
-                        <div id="gpt3TokenCount" class="text-2xl font-bold text-purple-600">0</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-indigo-800">GPT-4</div>
-                        <div id="gpt4TokenCount" class="text-2xl font-bold text-indigo-600">0</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-pink-800">Claude</div>
-                        <div id="claudeTokenCount" class="text-2xl font-bold text-pink-600">0</div>
-                    </div>
-                </div>
-            </div>
+        <div id="stats" class="hidden">
+            <div id="totalFileCount">0</div>
+            <div id="totalCharCount">0</div>
+            <div id="skippedFileCount">0</div>
+            <div id="gpt3TokenCount">0</div>
+            <div id="gpt4TokenCount">0</div>
+            <div id="claudeTokenCount">0</div>
         </div>
-
-        <!-- 添加复制框和下载按钮 -->
-        <div id="resultActions" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="resultActions">处理结果</h3>
-            <div class="space-y-4">
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-sm font-medium text-gray-700" data-lang="copyContent">合并内容</label>
-                        <button id="copyBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm transition-colors" data-lang="copyBtn">复制</button>
-                    </div>
-                    <div class="relative">
-                        <textarea id="copyArea" rows="6" 
-                            class="w-full p-3 border rounded-lg text-sm font-mono bg-gray-50" 
-                            readonly 
-                            placeholder="处理完成后的内容将显示在这里..."
-                            data-lang-placeholder="copyAreaPlaceholder"></textarea>
-                        <div class="absolute top-0 right-0 bg-gray-200 text-gray-600 px-2 py-1 text-xs rounded-bl" data-lang="copyAreaHint">点击复制按钮复制内容</div>
-                    </div>
-                    <div id="copyStatus" class="text-sm text-green-600 mt-1 hidden" data-lang="copySuccess">已复制到剪贴板！</div>
-                </div>
-                <div class="flex justify-center">
-                    <button id="downloadBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                        <span data-lang="downloadBtn">下载合并内容</span>
-                    </button>
-                </div>
-            </div>
+        <div id="resultActions" class="hidden">
+            <textarea id="copyArea"></textarea>
+            <button id="copyBtn"></button>
+            <button id="downloadBtn"></button>
+            <div id="copyStatus" class="hidden"></div>
         </div>
-
-        <!-- 添加文件夹结构显示区域 -->
-        <div id="folderStructure" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-800" data-lang="folderStructure">文件夹结构</h3>
-                <button id="copyStructureBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm transition-colors" data-lang="copyBtn">复制</button>
-            </div>
-            <div class="relative">
-                <pre id="structureArea" class="w-full p-3 border rounded-lg text-sm font-mono bg-gray-50 overflow-auto max-h-96"></pre>
-                <div class="absolute top-0 right-0 bg-gray-200 text-gray-600 px-2 py-1 text-xs rounded-bl" data-lang="structureAreaHint">文件夹树状结构</div>
-            </div>
-            <div id="structureCopyStatus" class="text-sm text-green-600 mt-1 hidden" data-lang="copySuccess">已复制到剪贴板！</div>
+        <div id="folderStructure" class="hidden">
+            <pre id="structureArea"></pre>
+            <button id="copyStructureBtn"></button>
+            <div id="structureCopyStatus" class="hidden"></div>
         </div>
-
-        <!-- 状态信息 -->
-        <div id="status" class="bg-white rounded-lg shadow-lg p-6"></div>
+        <div id="status"></div>
     </div>
-<script>
-        // 添加语言配置
-        const TRANSLATIONS = {
-            zh: {
-                title: '代码文件内容提取与统计工具',
-                folderUpload: '文件夹上传',
-                folderUploadDesc: '选择整个文件夹进行分析',
-                fileUpload: '文件上传',
-                fileUploadDesc: '选择一个或多个文件',
-                selectedFiles: '已选择的文件',
-                codeProcessingOptions: '代码处理选项',
-                compressCode: '压缩代码',
-                compressCodeDesc: '删除多余空格、换行等，减少文件大小',
-                tokenCalcModel: 'Token计算模型',
-                blacklistSettings: '黑名单设置',
-                saveSettings: '保存设置',
-                blacklistFoldersDesc: '这些文件夹将被自动跳过处理：',
-                blacklistFoldersTip: '提示：每行输入一个文件夹名称，这些文件夹及其子文件夹中的文件将被跳过。',
-                blacklistExtDesc: '这些扩展名的文件将被自动跳过处理：',
-                blacklistExtTip: '提示：每行输入一个文件扩展名（如 .jpg 或 jpg），这些扩展名的文件将被跳过。',
-                supportedFileTypes: '支持的文件类型',
-                codeFiles: '代码文件',
-                otherFiles: '其他文件',
-                startProcessing: '开始处理',
-                processingProgress: '处理进度',
-                statistics: '统计信息',
-                processedFiles: '处理文件数',
-                totalChars: '总字符数',
-                skippedFiles: '跳过文件数',
-                tokenStats: 'Token 统计',
-                blacklistUpdated: '黑名单设置已更新',
-                pleaseSelectFiles: '请选择文件或文件夹！',
-                fileReadError: '文件读取失败',
-                totalFiles: '总文件数',
-                willBeSkipped: '将被跳过',
-                actualProcessing: '实际处理',
-                filePath: '文件路径',
-                chars: '字符',
-                fileProcessed: '文件处理完成',
-                fileSkipped: '文件已跳过',
-                processingFile: '正在处理文件',
-                resultActions: '处理结果',
-                copyContent: '合并内容',
-                copyBtn: '复制',
-                copySuccess: '已复制到剪贴板！',
-                downloadBtn: '下载合并内容',
-                copyAreaHint: '点击复制按钮复制内容',
-                copyAreaPlaceholder: '处理完成后的内容将显示在这里...',
-                description: '这是一个帮助你分析代码文件的工具。可以统计字符数、计算不同模型的Token数量，并支持导出合并后的内容。适用于需要估算API调用成本或批量处理代码文件的场景。',
-                folderStructure: '文件夹结构',
-                structureAreaHint: '文件夹树状结构',
-                processingMode: '处理模式',
-                modeFullProcess: '完整处理',
-                modeFullProcessDesc: '提取文件树和合并文件内容',
-                modeTreeOnly: '仅文件树',
-                modeTreeOnlyDesc: '只提取文件树结构，不处理文件内容',
-                useGitignore: '使用.gitignore',
-                useGitignoreDesc: '从项目中的.gitignore文件读取忽略规则',
-                gitignoreRulesFound: '从.gitignore中读取了{0}条规则',
-                gitignoreNotFound: '未找到.gitignore文件',
-                useGitignoreSuccess: '成功应用.gitignore规则',
-                gitignoreUpload: '.gitignore上传',
-                gitignoreUploadDesc: '上传.gitignore文件，自动应用到黑名单设置',
-                applyGitignore: '应用',
-                gitignoreApplied: '.gitignore规则已应用，已添加{0}条规则到黑名单',
-                noGitignoreSelected: '请先选择.gitignore文件',
-                scanningForGitignore: '正在扫描.gitignore文件...',
-                gitignoreFoundAuto: '自动检测到.gitignore文件，已应用{0}条规则',
-                ignoreGit: '忽略.git文件夹',
-                ignoreGitDesc: '跳过.git文件夹及其中的版本控制文件',
-            },
-            en: {
-                title: 'Code File Content Extraction and Statistics Tool',
-                folderUpload: 'Folder Upload',
-                folderUploadDesc: 'Select an entire folder for analysis',
-                fileUpload: 'File Upload',
-                fileUploadDesc: 'Select one or multiple files',
-                selectedFiles: 'Selected Files',
-                codeProcessingOptions: 'Code Processing Options',
-                compressCode: 'Compress Code',
-                compressCodeDesc: 'Remove extra spaces and line breaks to reduce file size',
-                tokenCalcModel: 'Token Calculation Model',
-                blacklistSettings: 'Blacklist Settings',
-                saveSettings: 'Save Settings',
-                blacklistFoldersDesc: 'These folders will be automatically skipped:',
-                blacklistFoldersTip: 'Tip: Enter one folder name per line. Files in these folders and their subfolders will be skipped.',
-                blacklistExtDesc: 'Files with these extensions will be automatically skipped:',
-                blacklistExtTip: 'Tip: Enter one file extension per line (e.g. .jpg or jpg). Files with these extensions will be skipped.',
-                supportedFileTypes: 'Supported File Types',
-                codeFiles: 'Code Files',
-                otherFiles: 'Other Files',
-                startProcessing: 'Start Processing',
-                processingProgress: 'Processing Progress',
-                statistics: 'Statistics',
-                processedFiles: 'Processed Files',
-                totalChars: 'Total Characters',
-                skippedFiles: 'Skipped Files',
-                tokenStats: 'Token Statistics',
-                blacklistUpdated: 'Blacklist settings updated',
-                pleaseSelectFiles: 'Please select files or folders!',
-                fileReadError: 'File read error',
-                totalFiles: 'Total Files',
-                willBeSkipped: 'Will be Skipped',
-                actualProcessing: 'Actually Processing',
-                filePath: 'File Path',
-                chars: 'characters',
-                fileProcessed: 'File processed',
-                fileSkipped: 'File skipped',
-                processingFile: 'Processing file',
-                resultActions: 'Processing Results',
-                copyContent: 'Merged Content',
-                copyBtn: 'Copy',
-                copySuccess: 'Copied to clipboard!',
-                downloadBtn: 'Download Merged Content',
-                copyAreaHint: 'Click copy button to copy content',
-                copyAreaPlaceholder: 'Processed content will be displayed here...',
-                description: 'This tool helps you analyze code files by counting characters, calculating tokens for different models, and exporting merged content. Perfect for estimating API costs or batch processing code files.',
-                folderStructure: 'Folder Structure',
-                structureAreaHint: 'Folder tree structure',
-                processingMode: 'Processing Mode',
-                modeFullProcess: 'Full Processing',
-                modeFullProcessDesc: 'Extract file tree and merge file contents',
-                modeTreeOnly: 'Tree Only',
-                modeTreeOnlyDesc: 'Only extract file tree structure, don\'t process file contents',
-                useGitignore: 'Use .gitignore',
-                useGitignoreDesc: 'Read ignore rules from .gitignore file in the project',
-                gitignoreRulesFound: 'Read {0} rules from .gitignore',
-                gitignoreNotFound: '.gitignore file not found',
-                useGitignoreSuccess: 'Successfully applied .gitignore rules',
-                gitignoreUpload: '.gitignore Upload',
-                gitignoreUploadDesc: 'Upload a .gitignore file to automatically apply to blacklist settings',
-                applyGitignore: 'Apply',
-                gitignoreApplied: '.gitignore rules applied, {0} rules added to blacklist',
-                noGitignoreSelected: 'Please select a .gitignore file first',
-                scanningForGitignore: 'Scanning for .gitignore file...',
-                gitignoreFoundAuto: 'Automatically detected .gitignore file, {0} rules applied',
-                ignoreGit: 'Ignore .git Folder',
-                ignoreGitDesc: 'Skip .git folder and version control files',
-            }
-        };
 
-        let currentLang = 'en';
-
-        // 语言切换函数
-        function toggleLanguage() {
-            currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            document.getElementById('langToggle').textContent = currentLang === 'zh' ? 'English' : '中文';
-            updatePageLanguage();
-        }
-
-        // 更新页面语言
-        function updatePageLanguage() {
-            const elements = document.querySelectorAll('[data-lang]');
-            elements.forEach(element => {
-                const key = element.getAttribute('data-lang');
-                if (TRANSLATIONS[currentLang][key]) {
-                    element.textContent = TRANSLATIONS[currentLang][key];
-                }
-            });
+    <script src="js/main.js"></script>
+    <script>
+        // 折叠控件函数
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById(id + 'Icon');
             
-            // 更新 placeholder 文本
-            const placeholderElements = document.querySelectorAll('[data-lang-placeholder]');
-            placeholderElements.forEach(element => {
-                const key = element.getAttribute('data-lang-placeholder');
-                if (TRANSLATIONS[currentLang][key]) {
-                    element.placeholder = TRANSLATIONS[currentLang][key];
-                }
-            });
-        }
-
-        // 添加语言切换按钮事件监听
-        document.getElementById('langToggle').addEventListener('click', toggleLanguage);
-
-        // 修改黑名单配置相关代码
-        let BLACKLIST_FOLDERS = [
-            'node_modules',
-            'dist',
-            'build',
-            'target',
-            'bin',
-            'obj',
-            'vendor',
-            '.git',
-            '.idea',
-            '.vscode',
-            '__pycache__',
-            'venv',
-            'env',
-            '.env',
-            'coverage',
-            'tmp',
-            'temp'
-        ];
-
-        // 保存用户默认黑名单（不包含可选的.git）
-        let DEFAULT_BLACKLIST_FOLDERS = BLACKLIST_FOLDERS.filter(folder => folder !== '.git');
-
-        // 新增扩展名黑名单
-        let BLACKLIST_EXTENSIONS = [];
-
-        // 存储选择的文件
-        let selectedFiles = new Map();
-        let totalFiles = 0;
-        let processedFiles = 0;
-        let skippedFiles = 0;
-        let totalChars = 0;
-        let totalGPT3Tokens = 0;
-        let totalGPT4Tokens = 0;
-        let totalClaudeTokens = 0;
-
-        // 存储合并后的内容
-        let mergedContent = '';
-
-        // 初始化文件选择监听器
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            files.forEach(file => {
-                const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                selectedFiles.set(fileId, file);
-            });
-            updateFileList();
-            // 清空input，允许重复选择相同文件
-            e.target.value = '';
-        });
-
-        // 更新文件列表显示
-        function updateFileList() {
-            const fileListElement = document.getElementById('fileList');
-            const selectedFilesContainer = document.getElementById('selectedFiles');
-            
-            if (selectedFiles.size === 0) {
-                selectedFilesContainer.classList.add('hidden');
-                return;
-            }
-
-            selectedFilesContainer.classList.remove('hidden');
-            fileListElement.innerHTML = '';
-
-            selectedFiles.forEach((file, fileId) => {
-                const fileElement = document.createElement('div');
-                fileElement.className = 'flex items-center justify-between bg-gray-50 p-2 rounded';
-                fileElement.innerHTML = `
-                    <span class="text-sm text-gray-600">${file.name}</span>
-                    <button onclick="removeFile('${fileId}')" 
-                        class="text-red-500 hover:text-red-700 text-sm px-2 py-1">
-                        ✕
-                    </button>
-                `;
-                fileListElement.appendChild(fileElement);
-            });
-        }
-
-        // 移除文件
-        function removeFile(fileId) {
-            selectedFiles.delete(fileId);
-            updateFileList();
-        }
-
-        // 计算不同模型的token数
-        function calculateTokens(text) {
-            try {
-                if (!encoder) {
-                    console.warn('Tokenizer not loaded yet, using fallback calculation');
-                    throw new Error('Tokenizer not loaded');
-                }
-                
-                // 使用加载的编码器
-                const gpt3Tokens = encoder.encode(text).length;
-                const gpt4Tokens = Math.ceil(gpt3Tokens * 1.09);
-                const claudeTokens = Math.ceil(text.length / 4);
-                
-                console.log('Token calculation:', { gpt3Tokens, gpt4Tokens, claudeTokens });
-                
-                return {
-                    gpt3: gpt3Tokens,
-                    gpt4: gpt4Tokens,
-                    claude: claudeTokens
-                };
-            } catch (error) {
-                console.error('Token calculation error:', error);
-                // 如果计算出错，返回保守估计
-                const fallbackTokens = {
-                    gpt3: Math.ceil(text.length / 3),
-                    gpt4: Math.ceil(text.length / 2.8),
-                    claude: Math.ceil(text.length / 4)
-                };
-                console.log('Using fallback calculation:', fallbackTokens);
-                return fallbackTokens;
-            }
-        }
-
-        // 代码压缩函数
-        function compressCode(code, fileExtension) {
-            try {
-                const ext = fileExtension.toLowerCase();
-                if (ext.includes('js') || ext.includes('ts') || ext.includes('jsx') || ext.includes('tsx')) {
-                    return js_beautify(code, { 
-                        indent_size: 1,
-                        space_in_empty_paren: false,
-                        preserve_newlines: false,
-                        max_preserve_newlines: 0,
-                        break_chained_methods: false,
-                        keep_array_indentation: false,
-                        space_before_conditional: false
-                    });
-                } else if (ext.includes('css')) {
-                    return css_beautify(code, {
-                        indent_size: 1,
-                        preserve_newlines: false,
-                        max_preserve_newlines: 0
-                    });
-                } else if (ext.includes('html')) {
-                    return html_beautify(code, {
-                        indent_size: 1,
-                        preserve_newlines: false,
-                        max_preserve_newlines: 0
-                    });
-                } else {
-                    return code
-                        .replace(/\s+/g, ' ')
-                        .replace(/[\n\r]+/g, '\n')
-                        .replace(/\/\*[\s\S]*?\*\//g, '')
-                        .replace(/\/\/.*/g, '')
-                        .trim();
-                }
-            } catch (error) {
-                console.error('压缩代码时出错:', error);
-                return code;
-            }
-        }
-
-        function isProcessableFile(file) {
-            const binaryMimeTypes = [
-                'image/',
-                'video/',
-                'audio/',
-                'application/pdf',
-                'application/zip',
-                'application/x-zip',
-                'application/x-rar-compressed',
-                'application/x-7z-compressed',
-                'application/x-executable',
-                'application/x-shockwave-flash',
-                'application/x-msdownload',
-                'application/octet-stream',
-                'application/x-deb',
-                'application/x-debian-package',
-                'application/x-rpm',
-                'application/x-msi'
-            ];
-
-            if (file.type) {
-                return !binaryMimeTypes.some(type => file.type.startsWith(type));
-            }
-
-            const binaryExtensions = [
-                '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.webp',
-                '.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv',
-                '.mp3', '.wav', '.ogg', '.m4a',
-                '.pdf', '.zip', '.rar', '.7z', '.tar', '.gz',
-                '.exe', '.dll', '.so', '.dylib',
-                '.iso', '.img',
-                '.deb', '.rpm', '.msi'
-            ];
-
-            return !binaryExtensions.some(ext => 
-                file.name.toLowerCase().endsWith(ext)
-            );
-        }
-        
-        // 添加黑名单检查函数
-        function isInBlacklist(filePath) {
-            // 检查文件夹是否在黑名单中
-            const inFolderBlacklist = BLACKLIST_FOLDERS.some(folder => 
-                filePath.split('/').includes(folder) || 
-                filePath.split('\\').includes(folder)
-            );
-            
-            if (inFolderBlacklist) return true;
-            
-            // 检查文件扩展名是否在黑名单中
-            return BLACKLIST_EXTENSIONS.some(ext => {
-                // 确保扩展名格式正确（以.开头）
-                const formattedExt = ext.startsWith('.') ? ext : '.' + ext;
-                return filePath.toLowerCase().endsWith(formattedExt.toLowerCase());
-            });
-        }
-
-        // 修改文件处理函数
-        async function processFiles() {
-            const folderInput = document.getElementById('folderInput');
-            const folderFiles = Array.from(folderInput.files);
-            const individualFiles = Array.from(selectedFiles.values());
-            
-            // 获取处理模式和选项
-            const isTreeOnlyMode = document.getElementById('modeTreeOnly').checked;
-            const shouldUseGitignore = document.getElementById('useGitignore').checked;
-            const shouldIgnoreGit = document.getElementById('ignoreGit').checked;
-            
-            // 更新黑名单（确保最新设置被应用）
-            const blacklistInput = document.getElementById('blacklistInput');
-            // 获取用户自定义的黑名单内容
-            const userBlacklist = blacklistInput.value
-                .split('\n')
-                .map(item => item.trim())
-                .filter(item => item !== '');
-            
-            // 根据ignoreGit选项确定最终的黑名单
-            BLACKLIST_FOLDERS = shouldIgnoreGit 
-                ? [...userBlacklist, '.git'] 
-                : [...userBlacklist];
-            
-            // 更新文本框以反映当前设置
-            blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
-            
-            // 更新扩展名黑名单
-            const blacklistExtInput = document.getElementById('blacklistExtInput');
-            BLACKLIST_EXTENSIONS = blacklistExtInput.value
-                .split('\n')
-                .map(item => {
-                    // 确保扩展名格式正确（以.开头）
-                    item = item.trim();
-                    return item !== '' ? (item.startsWith('.') ? item : '.' + item) : '';
-                })
-                .filter(item => item !== '');
-            
-            // 过滤掉黑名单文件
-            const filteredFolderFiles = folderFiles.filter(file => {
-                const filePath = file.webkitRelativePath;
-                
-                // 检查是否在黑名单中
-                if (isInBlacklist(filePath)) {
-                    return false;
-                }
-                
-                return true;
-            });
-            
-            const allFiles = [...filteredFolderFiles, ...individualFiles];
-            
-            if (allFiles.length === 0) {
-                alert(TRANSLATIONS[currentLang].pleaseSelectFiles);
-                return;
-            }
-
-            // 重置计数器
-            totalFiles = allFiles.length;
-            processedFiles = 0;
-            skippedFiles = 0;
-            totalChars = 0;
-            totalGPT3Tokens = 0;
-            totalGPT4Tokens = 0;
-            totalClaudeTokens = 0;
-            
-            let output = '';
-            const status = document.getElementById('status');
-            // 保留黑名单更新的消息，不清空状态区域
-            // status.innerHTML = '';
-            
-            document.getElementById('progress').classList.remove('hidden');
-            
-            // 如果是仅文件树模式，隐藏统计信息和合并内容区域
-            if (isTreeOnlyMode) {
-                document.getElementById('stats').classList.add('hidden');
-                document.getElementById('resultActions').classList.add('hidden');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
             } else {
-                document.getElementById('stats').classList.remove('hidden');
-                document.getElementById('resultActions').classList.remove('hidden');
-            }
-
-            const shouldCompress = document.getElementById('compressCode').checked;
-
-            // 如果只需要处理文件树
-            if (isTreeOnlyMode) {
-                // 直接生成文件树，不处理文件内容
-                if (folderFiles.length > 0) {
-                    generateFolderStructure(filteredFolderFiles);
-                    document.getElementById('folderStructure').classList.remove('hidden');
-                } else {
-                    document.getElementById('folderStructure').classList.add('hidden');
-                }
-                
-                // 更新进度
-                processedFiles = totalFiles;
-                updateProgress();
-                return;
-            }
-
-            // 完整处理模式
-            for (const file of allFiles) {
-                try {
-                    const filePath = file.webkitRelativePath || file.name;
-                    
-                    // 文件过滤逻辑已经在筛选阶段处理，不需要重复检查黑名单
-
-                    if (!isProcessableFile(file)) {
-                        skippedFiles++;
-                        status.innerHTML += `
-                            <div class="flex items-center space-x-2 text-sm mb-2">
-                                <span class="text-yellow-500">⚠</span>
-                                <span class="text-gray-700">${filePath}</span>
-                                <span class="text-yellow-500">${TRANSLATIONS[currentLang].willBeSkipped}</span>
-                            </div>`;
-                        updateProgress();
-                        continue;
-                    }
-
-                    let content = await readFile(file);
-                    
-                    if (shouldCompress) {
-                        const fileExtension = filePath.split('.').pop();
-                        content = compressCode(content, fileExtension);
-                    }
-
-                    const charCount = content.length;
-                    const tokens = calculateTokens(content);
-                    
-                    totalChars += charCount;
-                    totalGPT3Tokens += tokens.gpt3;
-                    totalGPT4Tokens += tokens.gpt4;
-                    totalClaudeTokens += tokens.claude;
-                    
-                    output += `=== ${TRANSLATIONS[currentLang].filePath}: ${filePath} ===\n`;
-                    output += `${TRANSLATIONS[currentLang].totalChars}: ${charCount}\n`;
-                    output += `GPT-3.5 Tokens: ${tokens.gpt3}\n`;
-                    output += `GPT-4 Tokens: ${tokens.gpt4}\n`;
-                    output += `Claude Tokens: ${tokens.claude}\n\n`;
-                    output += content;
-                    output += '\n\n' + '='.repeat(50) + '\n\n';
-                    
-                    status.innerHTML += `
-                        <div class="flex items-center space-x-2 text-sm mb-2">
-                            <span class="text-green-500">✓</span>
-                            <span class="text-gray-700">${filePath}</span>
-                            <span class="text-gray-500">
-                                (${charCount.toLocaleString()} ${TRANSLATIONS[currentLang].chars}, 
-                                GPT3: ${tokens.gpt3.toLocaleString()}, 
-                                GPT4: ${tokens.gpt4.toLocaleString()}, 
-                                Claude: ${tokens.claude.toLocaleString()} tokens)
-                            </span>
-                        </div>`;
-                } catch (error) {
-                    skippedFiles++;
-                    status.innerHTML += `
-                        <div class="flex items-center space-x-2 text-sm mb-2">
-                            <span class="text-red-500">✗</span>
-                            <span class="text-gray-700">${file.webkitRelativePath || file.name}</span>
-                            <span class="text-red-500">${TRANSLATIONS[currentLang].fileReadError}</span>
-                        </div>`;
-                }
-                
-                updateProgress();
-            }
-
-            // 更新统计信息显示
-            document.getElementById('totalFileCount').textContent = (totalFiles - skippedFiles).toLocaleString();
-            document.getElementById('skippedFileCount').textContent = skippedFiles.toLocaleString();
-            document.getElementById('totalCharCount').textContent = totalChars.toLocaleString();
-            document.getElementById('gpt3TokenCount').textContent = totalGPT3Tokens.toLocaleString();
-            document.getElementById('gpt4TokenCount').textContent = totalGPT4Tokens.toLocaleString();
-            document.getElementById('claudeTokenCount').textContent = totalClaudeTokens.toLocaleString();
-
-            if (totalChars > 0) {
-                // 保存合并内容并更新复制框
-                mergedContent = output;
-                document.getElementById('copyArea').value = output;
-            }
-
-            // 生成文件夹结构
-            if (folderFiles.length > 0) {
-                generateFolderStructure(filteredFolderFiles);
-                document.getElementById('folderStructure').classList.remove('hidden');
-            } else {
-                document.getElementById('folderStructure').classList.add('hidden');
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
             }
         }
 
-        function readFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => reject(new Error('文件读取失败'));
-                reader.readAsText(file);
-            });
-        }
-
-        function updateProgress() {
-            processedFiles++;
-            const percentage = Math.round((processedFiles / totalFiles) * 100);
-            document.getElementById('progressBar').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = `${percentage}% (${processedFiles}/${totalFiles})`;
-        }
-
-        function downloadOutput(content) {
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            // 修改下载文件名的语言
-            const fileName = currentLang === 'zh' ? '文件内容汇总_' : 'content_summary_';
-            a.download = fileName + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function encode(text) {
-            try {
-                return window.gpt3TokenizerImport.encode(text);
-            } catch (error) {
-                console.error('Tokenizer error:', error);
-                return [];
-            }
-        }
-
-        // 页面加载时初始化黑名单输入框
-        document.addEventListener('DOMContentLoaded', function() {
-            const blacklistInput = document.getElementById('blacklistInput');
-            blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
-            
-            // 初始化扩展名黑名单输入框
-            const blacklistExtInput = document.getElementById('blacklistExtInput');
-            blacklistExtInput.value = BLACKLIST_EXTENSIONS.join('\n');
-            
-            // 更新选择的文件统计
-            updateFileStats();
-            
-            // 初始化页面语言
-            updatePageLanguage();
-            
-            // 初始化复制按钮事件
-            document.getElementById('copyBtn').addEventListener('click', function() {
-                const copyArea = document.getElementById('copyArea');
-                copyArea.select();
-                document.execCommand('copy');
-                
-                // 显示复制成功提示
-                const copyStatus = document.getElementById('copyStatus');
-                copyStatus.classList.remove('hidden');
-                setTimeout(() => {
-                    copyStatus.classList.add('hidden');
-                }, 2000);
-            });
-            
-            // 初始化下载按钮事件
-            document.getElementById('downloadBtn').addEventListener('click', function() {
-                if (mergedContent) {
-                    downloadOutput(mergedContent);
-                }
-            });
-            
-            // 初始化复制结构按钮事件
-            document.getElementById('copyStructureBtn').addEventListener('click', function() {
-                const structureArea = document.getElementById('structureArea');
-                const range = document.createRange();
-                range.selectNode(structureArea);
-                window.getSelection().removeAllRanges();
-                window.getSelection().addRange(range);
-                document.execCommand('copy');
-                window.getSelection().removeAllRanges();
-                
-                // 显示复制成功提示
-                const structureCopyStatus = document.getElementById('structureCopyStatus');
-                structureCopyStatus.classList.remove('hidden');
-                setTimeout(() => {
-                    structureCopyStatus.classList.add('hidden');
-                }, 2000);
-            });
-            
-            // 添加忽略git选项变更事件
-            document.getElementById('ignoreGit').addEventListener('change', function() {
-                updateBlacklistForGit(this.checked);
-            });
-        });
-
-        // 保存黑名单设置
-        function saveBlacklist() {
-            const blacklistInput = document.getElementById('blacklistInput');
-            BLACKLIST_FOLDERS = blacklistInput.value
-                .split('\n')
-                .map(item => item.trim())
-                .filter(item => item !== '');
-            
-            // 保存扩展名黑名单
-            const blacklistExtInput = document.getElementById('blacklistExtInput');
-            BLACKLIST_EXTENSIONS = blacklistExtInput.value
-                .split('\n')
-                .map(item => {
-                    // 确保扩展名格式正确（以.开头）
-                    item = item.trim();
-                    return item !== '' ? (item.startsWith('.') ? item : '.' + item) : '';
-                })
-                .filter(item => item !== '');
-            
-            // 更新文件统计
-            updateFileStats();
-            
-            // 显示保存成功提示 - 修改为在按钮旁边显示
-            const saveStatus = document.getElementById('saveStatus');
-            saveStatus.classList.remove('hidden');
-            saveStatus.style.opacity = '1';
-            
-            // 添加自动消失的效果
-            setTimeout(() => {
-                // 用淡出效果移除提示
-                saveStatus.style.opacity = '0';
-                setTimeout(() => {
-                    saveStatus.classList.add('hidden');
-                }, 500);
-            }, 3000);
-        }
-
-        // 添加文件统计更新函数
-        function updateFileStats() {
-            const folderInput = document.getElementById('folderInput');
-            if (folderInput.files.length > 0) {
-                const totalCount = folderInput.files.length;
-                const blacklistedCount = Array.from(folderInput.files)
-                    .filter(file => isInBlacklist(file.webkitRelativePath))
-                    .length;
-                
-                const statsDiv = document.createElement('div');
-                statsDiv.className = 'text-sm text-gray-600 mt-2';
-                statsDiv.innerHTML = `
-                    ${TRANSLATIONS[currentLang].totalFiles}：${totalCount} | 
-                    ${TRANSLATIONS[currentLang].willBeSkipped}：${blacklistedCount} |
-                    ${TRANSLATIONS[currentLang].actualProcessing}：${totalCount - blacklistedCount}
-                `;
-                
-                const uploadArea = folderInput.closest('.upload-area');
-                const existingStats = uploadArea.querySelector('.text-sm:not(.text-gray-500)');
-                if (existingStats) {
-                    existingStats.remove();
-                }
-                uploadArea.appendChild(statsDiv);
-            }
-        }
-
-        // 修改文件选择监听器
-        document.getElementById('folderInput').addEventListener('change', function(e) {
-            updateFileStats();
-        });
-
-        // 添加生成文件夹结构的函数
-        function generateFolderStructure(files) {
-            // 创建文件夹树
-            const tree = {};
-            
-            files.forEach(file => {
-                const path = file.webkitRelativePath.split('/');
-                let current = tree;
-                
-                // 遍历路径的每一部分
-                for (let i = 0; i < path.length; i++) {
-                    const part = path[i];
-                    
-                    // 如果是最后一个部分（文件名）
-                    if (i === path.length - 1) {
-                        // 如果不在黑名单中，添加文件
-                        if (!isInBlacklist(file.webkitRelativePath)) {
-                            if (!current._files) current._files = [];
-                            current._files.push(part);
-                        }
-                    } else {
-                        // 如果是文件夹
-                        if (!current[part]) current[part] = {};
-                        current = current[part];
-                    }
-                }
-            });
-            
-            // 生成树状结构字符串
-            const structureText = renderTree(tree, '', true);
-            document.getElementById('structureArea').textContent = structureText;
-        }
-
-        // 渲染树状结构
-        function renderTree(node, prefix = '', isRoot = false) {
-            let result = '';
-            
-            // 获取所有文件夹名（排除 _files 特殊键）
-            const folders = Object.keys(node).filter(key => key !== '_files');
-            
-            // 处理文件夹
-            folders.forEach((folder, index) => {
-                const isLast = index === folders.length - 1 && (!node._files || node._files.length === 0);
-                const connector = isLast ? '└── ' : '├── ';
-                const childPrefix = isLast ? '    ' : '│   ';
-                
-                result += prefix + connector + folder + '/\n';
-                result += renderTree(node[folder], prefix + childPrefix);
-            });
-            
-            // 处理文件
-            if (node._files) {
-                node._files.forEach((file, index) => {
-                    const isLast = index === node._files.length - 1;
-                    const connector = isLast ? '└── ' : '├── ';
-                    result += prefix + connector + file + '\n';
-                });
-            }
-            
-            return result;
-        }
-
-        // 处理单独上传的.gitignore文件
-        async function processGitignoreFile() {
-            const gitignoreInput = document.getElementById('gitignoreInput');
-            
-            if (gitignoreInput.files.length === 0) {
-                alert(TRANSLATIONS[currentLang].noGitignoreSelected);
-                return;
-            }
-            
-            const gitignoreFile = gitignoreInput.files[0];
-            
-            try {
-                // 读取文件内容
-                const content = await readFile(gitignoreFile);
-                
-                // 解析规则
-                const rules = parseGitignoreRules(content);
-                
-                if (rules.length > 0) {
-                    // 更新黑名单
-                    const blacklistInput = document.getElementById('blacklistInput');
-                    const currentBlacklist = blacklistInput.value
-                        .split('\n')
-                        .map(item => item.trim())
-                        .filter(item => item !== '');
-                    
-                    // 将新规则添加到黑名单中
-                    const updatedBlacklist = [...new Set([...currentBlacklist, ...rules])];
-                    
-                    // 更新黑名单输入框
-                    blacklistInput.value = updatedBlacklist.join('\n');
-                    
-                    // 保存黑名单
-                    saveBlacklist();
-                    
-                    // 显示成功信息
-                    const status = document.getElementById('status');
-                    status.innerHTML = `
-                        <div class="flex items-center space-x-2 text-sm mb-2 bg-green-50 p-3 rounded">
-                            <span class="text-green-500">✓</span>
-                            <span class="text-green-700">${TRANSLATIONS[currentLang].gitignoreApplied.replace('{0}', rules.length)}</span>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error processing .gitignore file:', error);
-            }
-        }
-
-        // 修改文件夹输入事件，添加.gitignore自动检测
-        document.getElementById('folderInput').addEventListener('change', async function(e) {
-            // 更新文件统计
-            updateFileStats();
-            
-            // 检查是否应该自动处理.gitignore
-            if (document.getElementById('useGitignore').checked) {
-                await checkForGitignoreInRoot(e.target.files);
-            }
-        });
-
-        // 检查根目录是否有.gitignore文件
-        async function checkForGitignoreInRoot(files) {
-            const status = document.getElementById('status');
-            status.innerHTML = `
-                <div class="flex items-center space-x-2 text-sm mb-2 bg-blue-50 p-3 rounded">
-                    <span class="text-blue-500">ℹ</span>
-                    <span class="text-blue-700">${TRANSLATIONS[currentLang].scanningForGitignore}</span>
-                </div>
-            `;
-            
-            // 尝试在根目录找.gitignore文件
-            if (files && files.length > 0) {
-                const rootPath = files[0].webkitRelativePath.split('/')[0];
-                
-                for (const file of files) {
-                    const path = file.webkitRelativePath;
-                    const pathParts = path.split('/');
-                    
-                    // 查找第一级的.gitignore
-                    if (pathParts.length === 2 && pathParts[1].toLowerCase() === '.gitignore') {
-                        try {
-                            // 读取文件内容
-                            const content = await readFile(file);
-                            
-                            // 解析规则
-                            const rules = parseGitignoreRules(content);
-                            
-                            if (rules.length > 0) {
-                                // 更新黑名单
-                                const blacklistInput = document.getElementById('blacklistInput');
-                                const currentBlacklist = blacklistInput.value
-                                    .split('\n')
-                                    .map(item => item.trim())
-                                    .filter(item => item !== '');
-                                
-                                // 将新规则添加到黑名单中
-                                const updatedBlacklist = [...new Set([...currentBlacklist, ...rules])];
-                                
-                                // 更新黑名单输入框
-                                blacklistInput.value = updatedBlacklist.join('\n');
-                                
-                                // 保存黑名单
-                                saveBlacklist();
-                                
-                                // 显示成功信息
-                                status.innerHTML = `
-                                    <div class="flex items-center space-x-2 text-sm mb-2 bg-green-50 p-3 rounded">
-                                        <span class="text-green-500">✓</span>
-                                        <span class="text-green-700">${TRANSLATIONS[currentLang].gitignoreFoundAuto.replace('{0}', rules.length)}</span>
-                                    </div>
-                                `;
-                                
-                                // 找到并处理后返回
-                                return true;
-                            }
-                        } catch (error) {
-                            console.error('Error processing .gitignore file:', error);
-                        }
-                    }
-                }
-            }
-            
-            return false;
-        }
-
-        // 更新黑名单中的.git设置
-        function updateBlacklistForGit(ignoreGit) {
-            const blacklistInput = document.getElementById('blacklistInput');
-            
-            // 获取当前黑名单内容，排除.git项
-            const currentBlacklist = blacklistInput.value
-                .split('\n')
-                .map(item => item.trim())
-                .filter(item => item !== '' && item !== '.git');
-            
-            // 根据选项决定是否添加.git
-            if (ignoreGit) {
-                currentBlacklist.push('.git');
-            }
-            
-            // 更新文本框内容
-            blacklistInput.value = currentBlacklist.join('\n');
-            
-            // 保存设置
-            saveBlacklist();
-            
-            // 更新文件统计
-            updateFileStats();
+        // 滚动到指定区域函数
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
+
 </html>

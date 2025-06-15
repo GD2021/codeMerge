@@ -1,0 +1,166 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 300px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+.file-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+/* 添加新的样式 */
+.upload-area {
+    border: 2px dashed #CBD5E0;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+.upload-area:hover {
+    border-color: #4299E1;
+    background: linear-gradient(135deg, #EBF8FF 0%, #DBEAFE 100%);
+    transform: translateY(-1px);
+}
+.progress-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+/* 分块式App风格样式 */
+.card-step {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4 transition-all duration-200 hover:shadow-md hover:border-gray-200;
+}
+
+.card-side {
+    @apply bg-white rounded-lg shadow-sm border border-gray-100 p-4 transition-all duration-200 hover:shadow-md;
+}
+
+/* 步骤指示器动画 */
+.card-step .w-8.h-8.bg-blue-600 {
+    animation: stepGlow 2s ease-in-out infinite alternate;
+}
+@keyframes stepGlow {
+    from {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+    to {
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+    }
+}
+
+/* 卡片悬浮效果 */
+.card-step:hover,
+.card-side:hover {
+    transform: translateY(-2px);
+}
+
+/* 按钮增强样式 */
+.card-step button[onclick="processFiles()"] {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    transition: all 0.3s ease;
+}
+.card-step button[onclick="processFiles()"]:hover {
+    background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* 选项卡片选中状态 */
+input[type="radio"]:checked + div,
+input[type="checkbox"]:checked + div {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* 移动端适配 */
+@media (max-width: 1024px) {
+    .card-step,
+    .card-side {
+        @apply p-4;
+    }
+    
+    body {
+        padding-bottom: 80px; /* 为底部导航栏留出空间 */
+    }
+}
+
+/* 平滑滚动 */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 折叠动画 */
+#advancedSettings {
+    transition: all 0.3s ease;
+}
+
+/* Sticky 元素优化 */
+.lg\:sticky {
+    position: -webkit-sticky;
+    position: sticky;
+}
+
+/* 文本选择优化 */
+.font-mono {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+/* 小屏幕下的网格优化 */
+@media (max-width: 768px) {
+    .grid.md\:grid-cols-2 {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    /* 三列布局在小屏幕下改为单列 */
+    .grid.md\:grid-cols-3 {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
+/* 中等屏幕下的三列布局优化 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .grid.md\:grid-cols-3 {
+        gap: 0.5rem;
+    }
+    
+    .grid.md\:grid-cols-3 .upload-area {
+        padding: 0.75rem;
+    }
+    
+    .grid.md\:grid-cols-3 .upload-area label {
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .grid.md\:grid-cols-3 .upload-area p {
+        font-size: 0.625rem;
+    }
+    
+    .grid.md\:grid-cols-3 .upload-area button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.625rem;
+    }
+}
