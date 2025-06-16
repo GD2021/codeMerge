@@ -1,4 +1,4 @@
-// HTML 模板 - 包含完整的界面内容
+// HTML 模板 - 包含完整的界面内容，此文件没有更新维护
 const HTML_TEMPLATE = `<!DOCTYPE html>
 <html>
 <head>

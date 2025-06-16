@@ -1,13 +1,4 @@
-let encoder;
-        // 等待加载完成
-        window.addEventListener('load', async () => {
-            try {
-                // 初始化编码器
-                encoder = await window.gpt3TokenizerImport;
-            } catch (error) {
-                console.error('Failed to load tokenizer:', error);
-            }
-        });
+// GPT-3 encoder 已删除，现在只使用正则表达式计算tokens
 
         // 从.gitignore读取忽略规则
         async function readGitignoreFile(directoryEntry) {

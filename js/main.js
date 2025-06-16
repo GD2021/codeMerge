@@ -203,9 +203,7 @@ let totalFiles = 0;
 let processedFiles = 0;
 let skippedFiles = 0;
 let totalChars = 0;
-let totalGPT3Tokens = 0;
-let totalGPT4Tokens = 0;
-let totalClaudeTokens = 0;
+let totalRegexTokens = 0;
 
 // 存储合并后的内容
 let mergedContent = '';
@@ -255,36 +253,28 @@ function removeFile(fileId) {
     updateFileList();
 }
 
-// 计算不同模型的token数
+// 使用正则表达式计算Token数的函数
+function roughTokenCount(text) {
+    const tokens = text.match(/\w+|[^\s\w]/g);
+    return tokens ? tokens.length : 0;
+}
+
+// 计算token数 - 只使用正则表达式
 function calculateTokens(text) {
     try {
-        if (!encoder) {
-            console.warn('Tokenizer not loaded yet, using fallback calculation');
-            throw new Error('Tokenizer not loaded');
-        }
+        // 使用正则表达式计算tokens
+        const regexTokens = roughTokenCount(text);
         
-        // 使用加载的编码器
-        const gpt3Tokens = encoder.encode(text).length;
-        const gpt4Tokens = Math.ceil(gpt3Tokens * 1.09);
-        const claudeTokens = Math.ceil(text.length / 4);
-        
-        console.log('Token calculation:', { gpt3Tokens, gpt4Tokens, claudeTokens });
+        console.log('Token calculation (regex only):', regexTokens);
         
         return {
-            gpt3: gpt3Tokens,
-            gpt4: gpt4Tokens,
-            claude: claudeTokens
+            regex: regexTokens
         };
     } catch (error) {
         console.error('Token calculation error:', error);
-        // 如果计算出错，返回保守估计
-        const fallbackTokens = {
-            gpt3: Math.ceil(text.length / 3),
-            gpt4: Math.ceil(text.length / 2.8),
-            claude: Math.ceil(text.length / 4)
+        return {
+            regex: 0
         };
-        console.log('Using fallback calculation:', fallbackTokens);
-        return fallbackTokens;
     }
 }
 
@@ -447,9 +437,7 @@ async function processFiles() {
     processedFiles = 0;
     skippedFiles = 0;
     totalChars = 0;
-    totalGPT3Tokens = 0;
-    totalGPT4Tokens = 0;
-    totalClaudeTokens = 0;
+    totalRegexTokens = 0;
     
     let output = '';
     const status = document.getElementById('status');
@@ -515,15 +503,11 @@ async function processFiles() {
             const tokens = calculateTokens(content);
             
             totalChars += charCount;
-            totalGPT3Tokens += tokens.gpt3;
-            totalGPT4Tokens += tokens.gpt4;
-            totalClaudeTokens += tokens.claude;
+            totalRegexTokens += tokens.regex;
             
             output += `=== ${TRANSLATIONS[currentLang].filePath}: ${filePath} ===\n`;
             output += `${TRANSLATIONS[currentLang].totalChars}: ${charCount}\n`;
-            output += `GPT-3.5 Tokens: ${tokens.gpt3}\n`;
-            output += `GPT-4 Tokens: ${tokens.gpt4}\n`;
-            output += `Claude Tokens: ${tokens.claude}\n\n`;
+            output += `Regex Tokens: ${tokens.regex}\n\n`;
             output += content;
             output += '\n\n' + '='.repeat(50) + '\n\n';
             
@@ -533,9 +517,7 @@ async function processFiles() {
                     <span class="text-gray-700">${filePath}</span>
                     <span class="text-gray-500">
                         (${charCount.toLocaleString()} ${TRANSLATIONS[currentLang].chars}, 
-                        GPT3: ${tokens.gpt3.toLocaleString()}, 
-                        GPT4: ${tokens.gpt4.toLocaleString()}, 
-                        Claude: ${tokens.claude.toLocaleString()} tokens)
+                        Regex: ${tokens.regex.toLocaleString()} tokens)
                     </span>
                 </div>`;
         } catch (error) {
@@ -555,9 +537,16 @@ async function processFiles() {
     document.getElementById('totalFileCount').textContent = (totalFiles - skippedFiles).toLocaleString();
     document.getElementById('skippedFileCount').textContent = skippedFiles.toLocaleString();
     document.getElementById('totalCharCount').textContent = totalChars.toLocaleString();
-    document.getElementById('gpt3TokenCount').textContent = totalGPT3Tokens.toLocaleString();
-    document.getElementById('gpt4TokenCount').textContent = totalGPT4Tokens.toLocaleString();
-    document.getElementById('claudeTokenCount').textContent = totalClaudeTokens.toLocaleString();
+    document.getElementById('gpt3TokenCount').textContent = totalRegexTokens.toLocaleString();
+    // 隐藏第二个和第三个token计数
+    const gpt4Element = document.getElementById('gpt4TokenCount');
+    if (gpt4Element) {
+        gpt4Element.closest('.flex').style.display = 'none';
+    }
+    const claudeElement = document.getElementById('claudeTokenCount');
+    if (claudeElement) {
+        claudeElement.closest('.flex').style.display = 'none';
+    }
 
     if (totalChars > 0) {
         // 保存合并内容并更新复制框
@@ -604,14 +593,7 @@ function downloadOutput(content) {
     URL.revokeObjectURL(url);
 }
 
-function encode(text) {
-    try {
-        return window.gpt3TokenizerImport.encode(text);
-    } catch (error) {
-        console.error('Tokenizer error:', error);
-        return [];
-    }
-}
+
 
 // 页面加载时初始化黑名单输入框
 document.addEventListener('DOMContentLoaded', function() {
