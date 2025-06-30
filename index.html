@@ -10,232 +10,294 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
     <link rel="stylesheet" href="style.css">
-    <script src="js/inHead.js"></script>
+    <script type="module" src="js/index.js"></script>
 </head>
 
 <body class="bg-neutral-50 min-h-screen">
-    <!-- 顶部固定导航栏 -->
+    <!-- Fixed top navigation bar -->
     <header class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
                     </svg>
                 </div>
-                <h1 class="text-xl font-bold text-gray-800" data-lang="title">Code Stats</h1>
+                <h1 class="text-lg font-bold text-gray-800" data-lang="title">Code File Content Extraction and Statistics Tool</h1>
             </div>
-            <button id="langToggle"
-                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors">
-                中文
-            </button>
+            <div class="flex items-center space-x-3">
+                <a href="https://github.com/TownBoats/codeMerge" target="_blank" rel="noopener noreferrer"
+                   class="flex items-center justify-center w-9 h-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                   title="View on GitHub">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"/>
+                    </svg>
+                </a>
+                <button id="langToggle"
+                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors text-sm">
+                    中文
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- 主要内容区域 -->
-    <main class="container mx-auto px-4 py-6">
-        <!-- 说明文字 -->
-        <div class="text-center mb-8">
-            <p class="text-gray-600 max-w-3xl mx-auto" data-lang="description">
-                这是一个帮助你分析代码文件的工具。可以统计字符数、计算不同模型的Token数量，并支持导出合并后的内容。适用于需要估算API调用成本或批量处理代码文件的场景。
+    <!-- Main content area -->
+    <main class="container mx-auto px-4 py-4">
+        <!-- Description text -->
+        <div class="text-center mb-4">
+            <p class="text-gray-600 max-w-2xl mx-auto text-sm" data-lang="description">
+                This tool helps you analyze code files by counting characters, calculating tokens for different models, and exporting merged content.
             </p>
         </div>
 
-        <!-- 左右两列布局 -->
-        <div class="grid lg:grid-cols-12 gap-6">
-            <!-- 左侧：流程步骤 -->
-            <section class="lg:col-span-8 space-y-6">
-                <!-- 步骤1：文件上传 -->
+        <!-- Two-column layout -->
+        <div class="grid lg:grid-cols-12 gap-4">
+            <!-- Left side: Process steps -->
+            <section class="lg:col-span-8 space-y-4">
+                <!-- Step 1: File upload -->
                 <article class="card-step" id="stepUpload">
-                    <div class="flex items-center space-x-3 mb-6">
+                    <div class="flex items-center space-x-3 mb-4">
                         <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
-                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepUpload">选择文件</h2>
+                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepUpload">Select Files</h2>
                     </div>
-                    
-                    <!-- 三个上传区域放在同一行 -->
-                    <div class="grid md:grid-cols-3 gap-4 mb-6">
-                        <div class="upload-area rounded-lg p-4 text-center">
-                            <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="folderUpload">文件夹上传</label>
-                            <input type="file" id="folderInput" webkitdirectory directory multiple
-                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                            <p class="text-xs text-gray-500 mt-2" data-lang="folderUploadDesc">选择整个文件夹进行分析</p>
-                        </div>
 
-                        <div class="upload-area rounded-lg p-4 text-center">
-                            <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="fileUpload">文件上传</label>
-                            <input type="file" id="fileInput" multiple
-                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                            <p class="text-xs text-gray-500 mt-2" data-lang="fileUploadDesc">选择一个或多个文件</p>
-                        </div>
-
-                        <div class="upload-area rounded-lg p-4 text-center">
-                            <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="gitignoreUpload">.gitignore上传</label>
-                            <input type="file" id="gitignoreInput" accept=".gitignore,*"
-                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer mb-2">
-                            <button onclick="processGitignoreFile()"
-                                class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
-                                <span data-lang="applyGitignore">应用</span>
+                    <!-- Three upload areas in the same row -->
+                    <div class="grid md:grid-cols-3 gap-3 mb-4">
+                        <div class="upload-area rounded p-3 text-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-2" data-lang="folderUpload">Folder Upload</label>
+                            <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+                            <button type="button" onclick="document.getElementById('folderInput').click()"
+                                class="custom-file-button w-full py-1.5 px-3 bg-blue-50 text-blue-700 rounded-full border-0 text-sm font-semibold hover:bg-blue-100 cursor-pointer transition-colors mb-1">
+                                <span data-lang="selectFolder">Select Folder</span>
                             </button>
-                            <p class="text-xs text-gray-500 mt-2" data-lang="gitignoreUploadDesc">上传.gitignore文件，自动应用到黑名单设置</p>
+                            <div id="folderStatus" class="text-xs text-gray-600 mb-1" data-lang="noFileSelected">No file selected</div>
+                            <p class="text-xs text-gray-500" data-lang="folderUploadDesc">Select an entire folder for analysis</p>
+                        </div>
+
+                        <div class="upload-area rounded p-3 text-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-2" data-lang="fileUpload">File Upload</label>
+                            <input type="file" id="fileInput" multiple style="display: none;">
+                            <button type="button" onclick="document.getElementById('fileInput').click()"
+                                class="custom-file-button w-full py-1.5 px-3 bg-blue-50 text-blue-700 rounded-full border-0 text-sm font-semibold hover:bg-blue-100 cursor-pointer transition-colors mb-1">
+                                <span data-lang="selectFiles">Select Files</span>
+                            </button>
+                            <div id="fileStatus" class="text-xs text-gray-600 mb-1" data-lang="noFileSelected">No file selected</div>
+                            <p class="text-xs text-gray-500" data-lang="fileUploadDesc">Select one or multiple files</p>
+                        </div>
+
+                        <div class="upload-area rounded p-3 text-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-2" data-lang="gitignoreUpload">.gitignore Upload</label>
+                            <input type="file" id="gitignoreInput" accept=".gitignore,*" style="display: none;">
+                            <button type="button" onclick="document.getElementById('gitignoreInput').click()"
+                                class="custom-file-button w-full py-1.5 px-3 bg-blue-50 text-blue-700 rounded-full border-0 text-sm font-semibold hover:bg-blue-100 cursor-pointer transition-colors mb-1">
+                                <span data-lang="selectGitignore">Select .gitignore</span>
+                            </button>
+                            <div id="gitignoreStatus" class="text-xs text-gray-600 mb-1" data-lang="noFileSelected">No file selected</div>
+                            <button onclick="processGitignoreFile()"
+                                class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs">
+                                <span data-lang="applyGitignore">Apply</span>
+                            </button>
+                            <p class="text-xs text-gray-500 mt-1" data-lang="gitignoreUploadDesc">Upload a .gitignore file to automatically apply to blacklist settings</p>
                         </div>
                     </div>
 
-                    <!-- 选中文件列表 -->
-                    <div id="selectedFiles" class="file-list mt-4 border rounded-lg p-4 hidden bg-gray-50">
-                        <h3 class="text-sm font-medium text-gray-700 mb-3" data-lang="selectedFiles">已选择的文件</h3>
-                        <div id="fileList" class="space-y-2">
-                            <!-- 文件列表将在这里动态显示 -->
+                    <!-- Selected files list -->
+                    <div id="selectedFiles" class="file-list mt-4 border rounded p-3 hidden bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-semibold text-gray-800 flex items-center" data-lang="selectedFiles">
+                                <svg class="w-4 h-4 text-blue-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6.5a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 016 11.5V5z" clip-rule="evenodd"/>
+                                </svg>
+Selected Files
+                            </h3>
+                            <button onclick="clearAllFiles()"
+                                class="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors duration-200"
+                                title="Clear all files">
+                                <span data-lang="clearAll">Clear All</span>
+                            </button>
+                        </div>
+                        <div id="fileList">
+                            <!-- File list will be dynamically displayed here -->
                         </div>
                     </div>
                 </article>
 
-                <!-- 步骤2：配置选项 -->
+                <!-- Step 2: Configuration options -->
                 <article class="card-step" id="stepOptions">
-                    <div class="flex items-center space-x-3 mb-6">
+                    <div class="flex items-center space-x-3 mb-3">
                         <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepOptions">配置选项</h2>
+                        <h2 class="text-lg font-semibold text-gray-800" data-lang="stepOptions">Configure Options</h2>
                     </div>
 
-                    <!-- 三列并排布局：基础选项、处理模式、高级设置 -->
-                    <div class="grid lg:grid-cols-3 gap-6">
-                        <!-- 基础选项 -->
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-700 mb-3">基础选项</h4>
-                            <div class="space-y-3">
-                                <label class="flex items-center space-x-3 p-3 bg-white border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
-                                    <input type="checkbox" id="compressCode" class="w-4 h-4 rounded text-blue-600">
-                                    <div>
-                                        <span class="text-gray-700 font-medium" data-lang="compressCode">压缩代码</span>
-                                        <p class="text-xs text-gray-500 mt-1" data-lang="compressCodeDesc">删除多余空格、换行等</p>
-                                    </div>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 bg-white border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
-                                    <input type="checkbox" id="useGitignore" class="w-4 h-4 rounded text-blue-600" checked>
-                                    <div>
-                                        <span class="text-gray-700 font-medium" data-lang="useGitignore">使用.gitignore</span>
-                                        <p class="text-xs text-gray-500 mt-1" data-lang="useGitignoreDesc">读取忽略规则</p>
-                                    </div>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 bg-white border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
-                                    <input type="checkbox" id="ignoreGit" class="w-4 h-4 rounded text-blue-600" checked>
-                                    <div>
-                                        <span class="text-gray-700 font-medium" data-lang="ignoreGit">忽略.git文件夹</span>
-                                        <p class="text-xs text-gray-500 mt-1" data-lang="ignoreGitDesc">跳过版本控制文件</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- 处理模式选择 -->
-                        <div>
-                            <p class="text-sm font-medium text-gray-700 mb-3" data-lang="processingMode">处理模式</p>
-                            <div class="space-y-3">
-                                <label class="flex items-center space-x-3 p-3 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
-                                    <input type="radio" name="processingMode" id="modeFullProcess" value="full"
-                                        class="w-4 h-4 text-blue-600" checked>
-                                    <div>
-                                        <span class="text-gray-700 font-medium" data-lang="modeFullProcess">完整处理</span>
-                                        <p class="text-xs text-gray-500 mt-1" data-lang="modeFullProcessDesc">提取文件树和合并文件内容</p>
-                                    </div>
-                                </label>
-                                <label class="flex items-center space-x-3 p-3 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
-                                    <input type="radio" name="processingMode" id="modeTreeOnly" value="treeOnly"
-                                        class="w-4 h-4 text-blue-600">
-                                    <div>
-                                        <span class="text-gray-700 font-medium" data-lang="modeTreeOnly">仅文件树</span>
-                                        <p class="text-xs text-gray-500 mt-1" data-lang="modeTreeOnlyDesc">只提取文件树结构，不处理文件内容</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- 高级设置区域 -->
-                        <div class="space-y-4">
-                            <h4 class="text-sm font-medium text-gray-700 mb-3" data-lang="advancedSettings">高级设置</h4>
-                            
-                            <!-- 黑名单设置 -->
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-center">
-                                    <h5 class="text-xs font-medium text-gray-700" data-lang="blacklistSettings">黑名单设置</h5>
-                                    <button onclick="saveBlacklist()"
-                                        class="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
-                                        <span data-lang="saveSettings">保存</span>
-                                    </button>
-                                </div>
-
+                    <!-- Two-row layout: First row for basic options and processing mode, second row for blacklist settings -->
+                    <div class="space-y-4">
+                        <!-- First row: Basic options and Processing mode -->
+                        <div class="grid lg:grid-cols-2 gap-6">
+                            <!-- Basic options -->
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 mb-2" data-lang="basicOptions">Basic Options</h4>
                                 <div class="space-y-2">
-                                    <div>
-                                        <label class="block text-xs text-gray-600 mb-1" data-lang="blacklistFoldersDesc">忽略文件夹：</label>
-                                        <textarea id="blacklistInput" rows="2" class="w-full p-2 border rounded text-xs font-mono"
-                                            placeholder="每行一个文件夹名"></textarea>
+                                    <label class="flex items-center space-x-2 p-2 bg-white border rounded hover:border-blue-300 cursor-pointer transition-colors">
+                                        <input type="checkbox" id="compressCode" class="w-4 h-4 rounded text-blue-600">
+                                        <div>
+                                            <span class="text-gray-700 text-sm" data-lang="compressCode">Compress Code</span>
+                                            <p class="text-xs text-gray-500" data-lang="compressCodeDesc">Remove extra spaces and line breaks</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 bg-white border rounded hover:border-blue-300 cursor-pointer transition-colors">
+                                        <input type="checkbox" id="useGitignore" class="w-4 h-4 rounded text-blue-600" checked>
+                                        <div>
+                                            <span class="text-gray-700 text-sm" data-lang="useGitignore">Use .gitignore</span>
+                                            <p class="text-xs text-gray-500" data-lang="useGitignoreDesc">Read ignore rules</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 bg-white border rounded hover:border-blue-300 cursor-pointer transition-colors">
+                                        <input type="checkbox" id="ignoreGit" class="w-4 h-4 rounded text-blue-600" checked>
+                                        <div>
+                                            <span class="text-gray-700 text-sm" data-lang="ignoreGit">Ignore .git Folder</span>
+                                            <p class="text-xs text-gray-500" data-lang="ignoreGitDesc">Skip version control files</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Processing mode selection -->
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 mb-2" data-lang="processingMode">Processing Mode</p>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-2 p-2 bg-white border-2 border-gray-200 rounded hover:border-blue-300 cursor-pointer transition-colors">
+                                        <input type="radio" name="processingMode" id="modeFullProcess" value="full"
+                                            class="w-4 h-4 text-blue-600" checked>
+                                        <div>
+                                            <span class="text-gray-700 text-sm" data-lang="modeFullProcess">Full Processing</span>
+                                            <p class="text-xs text-gray-500" data-lang="modeFullProcessDesc">Extract file tree and merge file contents</p>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-2 bg-white border-2 border-gray-200 rounded hover:border-blue-300 cursor-pointer transition-colors">
+                                        <input type="radio" name="processingMode" id="modeTreeOnly" value="treeOnly"
+                                            class="w-4 h-4 text-blue-600">
+                                        <div>
+                                            <span class="text-gray-700 text-sm" data-lang="modeTreeOnly">Tree Only</span>
+                                            <p class="text-xs text-gray-500" data-lang="modeTreeOnlyDesc">Only extract file tree structure, don't process file contents</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Second row: Blacklist settings -->
+                        <div class="bg-white border rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-sm font-medium text-gray-700" data-lang="blacklistSettings">Blacklist Settings</h4>
+                                <button onclick="saveBlacklist()"
+                                    class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                                    <span data-lang="saveSettings">Save Settings</span>
+                                </button>
+                            </div>
+
+                            <!-- Horizontal layout for blacklist sections -->
+                            <div class="grid lg:grid-cols-2 gap-6">
+                                <!-- 文件夹黑名单 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="blacklistFoldersDesc">Ignore Folders</label>
+
+                                    <!-- 标签显示区域 -->
+                                    <div id="folderBlacklistTags" class="flex flex-wrap gap-2 mb-3 min-h-[3rem] p-3 border rounded-lg bg-gray-50">
+                                        <!-- 标签将通过JavaScript动态生成 -->
                                     </div>
-                                    <div>
-                                        <label class="block text-xs text-gray-600 mb-1" data-lang="blacklistExtDesc">忽略扩展名：</label>
-                                        <textarea id="blacklistExtInput" rows="2" class="w-full p-2 border rounded text-xs font-mono"
-                                            placeholder=".jpg\n.png\n.mp4"></textarea>
+
+                                    <!-- 添加新项目 -->
+                                    <div class="flex gap-2">
+                                        <input type="text" id="newFolderInput"
+                                            class="flex-1 px-3 py-2 border rounded-lg text-sm"
+                                            placeholder="输入文件夹名称" data-lang-placeholder="folderNamePlaceholder">
+                                        <button onclick="addFolderToBlacklist()"
+                                            class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+                                            <span data-lang="add">添加</span>
+                                        </button>
                                     </div>
                                 </div>
-                                
-                                <div id="saveStatus" class="text-xs text-green-600 hidden">
-                                    <span class="text-green-500">✓</span>
-                                    <span data-lang="blacklistUpdated">已更新</span>
+
+                                <!-- 扩展名黑名单 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-3" data-lang="blacklistExtDesc">Ignore Extensions</label>
+
+                                    <!-- 标签显示区域 -->
+                                    <div id="extensionBlacklistTags" class="flex flex-wrap gap-2 mb-3 min-h-[3rem] p-3 border rounded-lg bg-gray-50">
+                                        <!-- 标签将通过JavaScript动态生成 -->
+                                    </div>
+
+                                    <!-- 添加新项目 -->
+                                    <div class="flex gap-2">
+                                        <input type="text" id="newExtensionInput"
+                                            class="flex-1 px-3 py-2 border rounded-lg text-sm"
+                                            placeholder="输入扩展名 (如: .jpg)" data-lang-placeholder="extensionPlaceholder">
+                                        <button onclick="addExtensionToBlacklist()"
+                                            class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+                                            <span data-lang="add">添加</span>
+                                        </button>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- 隐藏的原始输入框，用于兼容现有逻辑 -->
+                            <textarea id="blacklistInput" class="hidden"></textarea>
+                            <textarea id="blacklistExtInput" class="hidden"></textarea>
+
+                            <div id="saveStatus" class="text-sm text-green-600 hidden mt-3">
+                                <span class="text-green-500">✓</span>
+                                <span data-lang="blacklistUpdated">Updated</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 支持的文件类型 -->
-                    <div class="bg-blue-50 p-3 rounded-lg mt-6">
-                        <h4 class="text-sm font-medium text-blue-800 mb-2" data-lang="supportedFileTypes">支持的文件类型</h4>
-                        <div class="grid md:grid-cols-2 gap-2 text-xs text-blue-700">
-                            <div>
-                                <p class="font-medium mb-1" data-lang="codeFiles">代码文件</p>
-                                <p>.js, .py, .java, .cpp, .h, .cs, .php, .rb, .swift, .go, .rs, .ts, .jsx, .tsx</p>
-                            </div>
-                            <div>
-                                <p class="font-medium mb-1" data-lang="otherFiles">其他文件</p>
-                                <p>.json, .yaml, .yml, .xml, .toml, .ini, .conf, .txt, .log, .md, .csv</p>
-                            </div>
-                        </div>
-                    </div>
+
                 </article>
 
-                <!-- 步骤3：开始处理 -->
+                <!-- Step 3: Start processing -->
                 <article class="card-step" id="stepStart">
-                    <div class="flex items-center space-x-3 mb-6">
+                    <div class="flex items-center space-x-3 mb-3">
                         <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
-                        <h2 class="text-xl font-semibold text-gray-800" data-lang="stepStart">开始处理</h2>
+                        <h2 class="text-lg font-semibold text-gray-800" data-lang="stepStart">Start Processing</h2>
                     </div>
-                    
+
                     <button onclick="processFiles()"
-                        class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                        class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
                         data-lang="startProcessing">
                         <div class="flex items-center justify-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                             </svg>
-                            <span data-lang="startProcessing">开始处理</span>
+                            <span data-lang="startProcessing">Start Processing</span>
                         </div>
                     </button>
                 </article>
             </section>
 
-            <!-- 右侧：状态和结果面板 -->
-            <aside class="lg:col-span-4 space-y-4 lg:sticky lg:top-24 lg:self-start" id="sidePanel">
-                <!-- 状态卡片 -->
+            <!-- Right side: Status and results panel -->
+            <aside class="lg:col-span-4 space-y-3 lg:sticky lg:top-20 lg:self-start" id="sidePanel">
+                <!-- Status card -->
                 <div id="statusCard" class="card-side">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">状态</h3>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-base font-semibold text-gray-800" data-lang="status">Status</h3>
+                        <button onclick="resetPage()"
+                            class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors"
+                            title="Reset Page">
+                            <span data-lang="reset">重置</span>
+                        </button>
+                    </div>
                     <div class="flex items-center space-x-2 text-gray-600">
-                        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                        <span class="text-sm">准备就绪</span>
+                        <div id="statusIndicator" class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <span id="statusText" class="text-sm" data-lang="ready">Ready</span>
                     </div>
                 </div>
 
-                <!-- 进度卡片 -->
+                <!-- Progress card -->
                 <div id="progressCard" class="card-side hidden">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="processingProgress">处理进度</h3>
+                    <h3 class="text-base font-semibold text-gray-800 mb-3" data-lang="processingProgress">Processing Progress</h3>
                     <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
                         <div class="bg-blue-600 h-2 rounded-full transition-all duration-300 progress-pulse" id="progressBar"
                             style="width: 0%"></div>
@@ -243,58 +305,78 @@
                     <div id="progressText" class="text-sm text-gray-600 text-center font-medium">0%</div>
                 </div>
 
-                <!-- 统计卡片 -->
+                <!-- Statistics card -->
                 <div id="statsCard" class="card-side hidden">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="statistics">统计信息</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
-                            <span class="text-sm text-blue-800" data-lang="processedFiles">处理文件</span>
-                            <span id="totalFileCount" class="font-bold text-blue-600">0</span>
+                    <h3 class="text-base font-semibold text-gray-800 mb-3" data-lang="statistics">Statistics</h3>
+
+                    <!-- 横向四个统计方块 -->
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <!-- 处理文件数 -->
+                        <div onclick="showFileDetails('processed')"
+                             class="stat-block bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-3 cursor-pointer transition-colors">
+                            <div class="text-xs text-blue-600 mb-1" data-lang="processedFiles">Processed</div>
+                            <div id="totalFileCount" class="text-lg font-bold text-blue-700">0</div>
+                            <div class="text-xs text-blue-500">files</div>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-green-50 rounded">
-                            <span class="text-sm text-green-800" data-lang="totalChars">总字符数</span>
-                            <span id="totalCharCount" class="font-bold text-green-600">0</span>
+
+                        <!-- 跳过文件数 -->
+                        <div onclick="showFileDetails('skipped')"
+                             class="stat-block bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded-lg p-3 cursor-pointer transition-colors">
+                            <div class="text-xs text-yellow-600 mb-1" data-lang="skippedFiles">Skipped</div>
+                            <div id="skippedFileCount" class="text-lg font-bold text-yellow-700">0</div>
+                            <div class="text-xs text-yellow-500">files</div>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-yellow-50 rounded">
-                            <span class="text-sm text-yellow-800" data-lang="skippedFiles">跳过文件</span>
-                            <span id="skippedFileCount" class="font-bold text-yellow-600">0</span>
+
+                        <!-- 总字符数 -->
+                        <div onclick="showFileDetails('characters')"
+                             class="stat-block bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-3 cursor-pointer transition-colors">
+                            <div class="text-xs text-green-600 mb-1" data-lang="totalChars">Characters</div>
+                            <div id="totalCharCount" class="text-lg font-bold text-green-700">0</div>
+                            <div class="text-xs text-green-500">chars</div>
+                        </div>
+
+                        <!-- Token数量 -->
+                        <div onclick="showFileDetails('tokens')"
+                             class="stat-block bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-3 cursor-pointer transition-colors">
+                            <div class="text-xs text-purple-600 mb-1" data-lang="tokens">Tokens</div>
+                            <div id="totalTokenCount" class="text-lg font-bold text-purple-700">0</div>
+                            <div class="text-xs text-purple-500">tokens</div>
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <h4 class="text-sm font-medium text-gray-700 mb-3" data-lang="tokenStats">Token 统计</h4>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center p-2 bg-purple-50 rounded">
-                                <span class="text-xs text-purple-800">Regex Tokens</span>
-                                <span id="gpt3TokenCount" class="text-sm font-bold text-purple-600">0</span>
+                    <!-- 详细信息显示区域 -->
+                    <div id="detailsArea" class="hidden">
+                        <div class="bg-gray-50 rounded-lg p-3 border">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 id="detailsTitle" class="text-sm font-medium text-gray-700"></h4>
+                                <button onclick="hideFileDetails()" class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
                             </div>
-                            <div class="flex justify-between items-center p-2 bg-indigo-50 rounded">
-                                <span class="text-xs text-indigo-800">Regex Tokens</span>
-                                <span id="gpt4TokenCount" class="text-sm font-bold text-indigo-600">0</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-pink-50 rounded" style="display: none;">
-                                <span class="text-xs text-pink-800">Claude</span>
-                                <span id="claudeTokenCount" class="text-sm font-bold text-pink-600">0</span>
+                            <div id="detailsContent" class="text-xs text-gray-600 max-h-32 overflow-y-auto">
+                                <!-- 详细内容将通过JavaScript动态填充 -->
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 结果卡片 -->
+                <!-- Results Card -->
                 <div id="resultCard" class="card-side hidden">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="resultActions">处理结果</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-lang="resultActions">Processing Results</h3>
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <label class="text-sm font-medium text-gray-700" data-lang="copyContent">合并内容</label>
+                                <label class="text-sm font-medium text-gray-700" data-lang="copyContent">Merged Content</label>
                                 <button id="copyBtn"
                                     class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors"
-                                    data-lang="copyBtn">复制</button>
+                                    data-lang="copyBtn">Copy</button>
                             </div>
                             <textarea id="copyArea" rows="4"
                                 class="w-full p-2 border rounded text-xs font-mono bg-gray-50" readonly
-                                placeholder="处理完成后的内容将显示在这里..." data-lang-placeholder="copyAreaPlaceholder"></textarea>
-                            <div id="copyStatus" class="text-xs text-green-600 mt-1 hidden" data-lang="copySuccess">已复制到剪贴板！</div>
+                                placeholder="Processed content will be displayed here..." data-lang-placeholder="copyAreaPlaceholder"></textarea>
+                            <div id="copyStatus" class="text-xs text-green-600 mt-1 hidden" data-lang="copySuccess">Copied to clipboard!</div>
                         </div>
                         <button id="downloadBtn"
                             class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
@@ -303,30 +385,56 @@
                                     d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
                                     clip-rule="evenodd" />
                             </svg>
-                            <span data-lang="downloadBtn">下载合并内容</span>
+                            <span data-lang="downloadBtn">Download Merged Content</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- 文件夹结构卡片 -->
+                <!-- Folder Structure Card -->
                 <div id="folderStructureCard" class="card-side hidden">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-lg font-semibold text-gray-800" data-lang="folderStructure">文件夹结构</h3>
+                        <h3 class="text-lg font-semibold text-gray-800" data-lang="folderStructure">Folder Structure</h3>
                         <button id="copyStructureBtn"
                             class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors"
-                            data-lang="copyBtn">复制</button>
+                            data-lang="copyBtn">Copy</button>
                     </div>
                     <pre id="structureArea"
                         class="w-full p-2 border rounded text-xs font-mono bg-gray-50 overflow-auto max-h-40"></pre>
-                    <div id="structureCopyStatus" class="text-xs text-green-600 mt-1 hidden" data-lang="copySuccess">已复制到剪贴板！</div>
+                    <div id="structureCopyStatus" class="text-xs text-green-600 mt-1 hidden" data-lang="copySuccess">Copied to clipboard!</div>
                 </div>
             </aside>
         </div>
     </main>
 
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <div class="flex justify-center items-center space-x-6 mb-4">
+                    <a href="https://github.com/TownBoats/codeMerge" target="_blank" rel="noopener noreferrer"
+                       class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>GitHub</span>
+                    </a>
+                    <span class="text-gray-400">•</span>
+                    <span class="text-gray-600" data-lang="openSource">Open Source</span>
+                    <span class="text-gray-400">•</span>
+                    <span class="text-gray-600">MIT License</span>
+                </div>
+                <p class="text-sm text-gray-500">
+                    Made with ❤️ for developers.
+                    <a href="https://github.com/TownBoats/codeMerge" target="_blank" rel="noopener noreferrer"
+                       class="text-blue-600 hover:text-blue-800 transition-colors" data-lang="starOnGithub">
+                        Star me on GitHub
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
 
-
-    <!-- 隐藏的原始元素，用于兼容现有JS -->
+    <!-- Hidden original elements for JS compatibility -->
     <div class="hidden">
         <div id="progress" class="hidden">
             <div id="progressBar" style="width: 0%"></div>
@@ -354,9 +462,8 @@
         <div id="status"></div>
     </div>
 
-    <script src="js/main.js"></script>
     <script>
-        // 折叠控件函数
+        // Accordion toggle function
         function toggleAccordion(id) {
             const content = document.getElementById(id);
             const icon = document.getElementById(id + 'Icon');
@@ -370,7 +477,7 @@
             }
         }
 
-        // 滚动到指定区域函数
+        // Scroll to section function
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }

@@ -1,174 +1,4 @@
-// 添加语言配置
-const TRANSLATIONS = {
-    zh: {
-        title: '代码文件内容提取与统计工具',
-        folderUpload: '文件夹上传',
-        folderUploadDesc: '选择整个文件夹进行分析',
-        fileUpload: '文件上传',
-        fileUploadDesc: '选择一个或多个文件',
-        selectedFiles: '已选择的文件',
-        codeProcessingOptions: '代码处理选项',
-        compressCode: '压缩代码',
-        compressCodeDesc: '删除多余空格、换行等，减少文件大小',
-        tokenCalcModel: 'Token计算模型',
-        blacklistSettings: '黑名单设置',
-        saveSettings: '保存设置',
-        blacklistFoldersDesc: '这些文件夹将被自动跳过处理：',
-        blacklistFoldersTip: '提示：每行输入一个文件夹名称，这些文件夹及其子文件夹中的文件将被跳过。',
-        blacklistExtDesc: '这些扩展名的文件将被自动跳过处理：',
-        blacklistExtTip: '提示：每行输入一个文件扩展名（如 .jpg 或 jpg），这些扩展名的文件将被跳过。',
-        supportedFileTypes: '支持的文件类型',
-        codeFiles: '代码文件',
-        otherFiles: '其他文件',
-        startProcessing: '开始处理',
-        processingProgress: '处理进度',
-        statistics: '统计信息',
-        processedFiles: '处理文件数',
-        totalChars: '总字符数',
-        skippedFiles: '跳过文件数',
-        tokenStats: 'Token 统计',
-        blacklistUpdated: '黑名单设置已更新',
-        pleaseSelectFiles: '请选择文件或文件夹！',
-        fileReadError: '文件读取失败',
-        totalFiles: '总文件数',
-        willBeSkipped: '将被跳过',
-        actualProcessing: '实际处理',
-        filePath: '文件路径',
-        chars: '字符',
-        fileProcessed: '文件处理完成',
-        fileSkipped: '文件已跳过',
-        processingFile: '正在处理文件',
-        resultActions: '处理结果',
-        copyContent: '合并内容',
-        copyBtn: '复制',
-        copySuccess: '已复制到剪贴板！',
-        downloadBtn: '下载合并内容',
-        copyAreaHint: '点击复制按钮复制内容',
-        copyAreaPlaceholder: '处理完成后的内容将显示在这里...',
-        description: '这是一个帮助你分析代码文件的工具。可以统计字符数、计算不同模型的Token数量，并支持导出合并后的内容。适用于需要估算API调用成本或批量处理代码文件的场景。',
-        folderStructure: '文件夹结构',
-        structureAreaHint: '文件夹树状结构',
-        processingMode: '处理模式',
-        modeFullProcess: '完整处理',
-        modeFullProcessDesc: '提取文件树和合并文件内容',
-        modeTreeOnly: '仅文件树',
-        modeTreeOnlyDesc: '只提取文件树结构，不处理文件内容',
-        useGitignore: '使用.gitignore',
-        useGitignoreDesc: '从项目中的.gitignore文件读取忽略规则',
-        gitignoreRulesFound: '从.gitignore中读取了{0}条规则',
-        gitignoreNotFound: '未找到.gitignore文件',
-        useGitignoreSuccess: '成功应用.gitignore规则',
-        gitignoreUpload: '.gitignore上传',
-        gitignoreUploadDesc: '上传.gitignore文件，自动应用到黑名单设置',
-        applyGitignore: '应用',
-        gitignoreApplied: '.gitignore规则已应用，已添加{0}条规则到黑名单',
-        noGitignoreSelected: '请先选择.gitignore文件',
-        scanningForGitignore: '正在扫描.gitignore文件...',
-        gitignoreFoundAuto: '自动检测到.gitignore文件，已应用{0}条规则',
-        ignoreGit: '忽略.git文件夹',
-        ignoreGitDesc: '跳过.git文件夹及其中的版本控制文件',
-    },
-    en: {
-        title: 'Code File Content Extraction and Statistics Tool',
-        folderUpload: 'Folder Upload',
-        folderUploadDesc: 'Select an entire folder for analysis',
-        fileUpload: 'File Upload',
-        fileUploadDesc: 'Select one or multiple files',
-        selectedFiles: 'Selected Files',
-        codeProcessingOptions: 'Code Processing Options',
-        compressCode: 'Compress Code',
-        compressCodeDesc: 'Remove extra spaces and line breaks to reduce file size',
-        tokenCalcModel: 'Token Calculation Model',
-        blacklistSettings: 'Blacklist Settings',
-        saveSettings: 'Save Settings',
-        blacklistFoldersDesc: 'These folders will be automatically skipped:',
-        blacklistFoldersTip: 'Tip: Enter one folder name per line. Files in these folders and their subfolders will be skipped.',
-        blacklistExtDesc: 'Files with these extensions will be automatically skipped:',
-        blacklistExtTip: 'Tip: Enter one file extension per line (e.g. .jpg or jpg). Files with these extensions will be skipped.',
-        supportedFileTypes: 'Supported File Types',
-        codeFiles: 'Code Files',
-        otherFiles: 'Other Files',
-        startProcessing: 'Start Processing',
-        processingProgress: 'Processing Progress',
-        statistics: 'Statistics',
-        processedFiles: 'Processed Files',
-        totalChars: 'Total Characters',
-        skippedFiles: 'Skipped Files',
-        tokenStats: 'Token Statistics',
-        blacklistUpdated: 'Blacklist settings updated',
-        pleaseSelectFiles: 'Please select files or folders!',
-        fileReadError: 'File read error',
-        totalFiles: 'Total Files',
-        willBeSkipped: 'Will be Skipped',
-        actualProcessing: 'Actually Processing',
-        filePath: 'File Path',
-        chars: 'characters',
-        fileProcessed: 'File processed',
-        fileSkipped: 'File skipped',
-        processingFile: 'Processing file',
-        resultActions: 'Processing Results',
-        copyContent: 'Merged Content',
-        copyBtn: 'Copy',
-        copySuccess: 'Copied to clipboard!',
-        downloadBtn: 'Download Merged Content',
-        copyAreaHint: 'Click copy button to copy content',
-        copyAreaPlaceholder: 'Processed content will be displayed here...',
-        description: 'This tool helps you analyze code files by counting characters, calculating tokens for different models, and exporting merged content. Perfect for estimating API costs or batch processing code files.',
-        folderStructure: 'Folder Structure',
-        structureAreaHint: 'Folder tree structure',
-        processingMode: 'Processing Mode',
-        modeFullProcess: 'Full Processing',
-        modeFullProcessDesc: 'Extract file tree and merge file contents',
-        modeTreeOnly: 'Tree Only',
-        modeTreeOnlyDesc: 'Only extract file tree structure, don\'t process file contents',
-        useGitignore: 'Use .gitignore',
-        useGitignoreDesc: 'Read ignore rules from .gitignore file in the project',
-        gitignoreRulesFound: 'Read {0} rules from .gitignore',
-        gitignoreNotFound: '.gitignore file not found',
-        useGitignoreSuccess: 'Successfully applied .gitignore rules',
-        gitignoreUpload: '.gitignore Upload',
-        gitignoreUploadDesc: 'Upload a .gitignore file to automatically apply to blacklist settings',
-        applyGitignore: 'Apply',
-        gitignoreApplied: '.gitignore rules applied, {0} rules added to blacklist',
-        noGitignoreSelected: 'Please select a .gitignore file first',
-        scanningForGitignore: 'Scanning for .gitignore file...',
-        gitignoreFoundAuto: 'Automatically detected .gitignore file, {0} rules applied',
-        ignoreGit: 'Ignore .git Folder',
-        ignoreGitDesc: 'Skip .git folder and version control files',
-    }
-};
 
-let currentLang = 'en';
-
-// 语言切换函数
-function toggleLanguage() {
-    currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    document.getElementById('langToggle').textContent = currentLang === 'zh' ? 'English' : '中文';
-    updatePageLanguage();
-}
-
-// 更新页面语言
-function updatePageLanguage() {
-    const elements = document.querySelectorAll('[data-lang]');
-    elements.forEach(element => {
-        const key = element.getAttribute('data-lang');
-        if (TRANSLATIONS[currentLang][key]) {
-            element.textContent = TRANSLATIONS[currentLang][key];
-        }
-    });
-    
-    // 更新 placeholder 文本
-    const placeholderElements = document.querySelectorAll('[data-lang-placeholder]');
-    placeholderElements.forEach(element => {
-        const key = element.getAttribute('data-lang-placeholder');
-        if (TRANSLATIONS[currentLang][key]) {
-            element.placeholder = TRANSLATIONS[currentLang][key];
-        }
-    });
-}
-
-// 添加语言切换按钮事件监听
-document.getElementById('langToggle').addEventListener('click', toggleLanguage);
 
 // 修改黑名单配置相关代码
 let BLACKLIST_FOLDERS = [
@@ -195,7 +25,13 @@ let BLACKLIST_FOLDERS = [
 let DEFAULT_BLACKLIST_FOLDERS = BLACKLIST_FOLDERS.filter(folder => folder !== '.git');
 
 // 新增扩展名黑名单
-let BLACKLIST_EXTENSIONS = [];
+let BLACKLIST_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.webp',
+    '.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv',
+    '.mp3', '.wav', '.ogg', '.m4a',
+    '.pdf', '.zip', '.rar', '.7z', '.tar', '.gz',
+    '.exe', '.dll', '.so', '.dylib'
+];
 
 // 存储选择的文件
 let selectedFiles = new Map();
@@ -216,6 +52,16 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
         selectedFiles.set(fileId, file);
     });
     updateFileList();
+    updateFileStatus(files);
+
+    // 更新状态
+    const totalFiles = selectedFiles.size;
+    if (totalFiles > 0) {
+        updateStatus('ready', 'filesSelected', totalFiles);
+    } else {
+        updateStatus('ready', 'ready');
+    }
+
     // 清空input，允许重复选择相同文件
     e.target.value = '';
 });
@@ -224,7 +70,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
 function updateFileList() {
     const fileListElement = document.getElementById('fileList');
     const selectedFilesContainer = document.getElementById('selectedFiles');
-    
+
     if (selectedFiles.size === 0) {
         selectedFilesContainer.classList.add('hidden');
         return;
@@ -233,25 +79,74 @@ function updateFileList() {
     selectedFilesContainer.classList.remove('hidden');
     fileListElement.innerHTML = '';
 
+    // 创建网格布局容器
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2';
+
     selectedFiles.forEach((file, fileId) => {
         const fileElement = document.createElement('div');
-        fileElement.className = 'flex items-center justify-between bg-gray-50 p-2 rounded';
+        fileElement.className = 'flex items-center justify-between bg-white border border-gray-200 p-3 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all duration-200';
+
+        // 截断长文件名
+        const displayName = file.name.length > 25 ? file.name.substring(0, 22) + '...' : file.name;
+
         fileElement.innerHTML = `
-            <span class="text-sm text-gray-600">${file.name}</span>
-            <button onclick="removeFile('${fileId}')" 
-                class="text-red-500 hover:text-red-700 text-sm px-2 py-1">
-                ✕
+            <div class="flex items-center min-w-0 flex-1">
+                <svg class="w-4 h-4 text-blue-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-gray-700 truncate" title="${file.name}">${displayName}</span>
+            </div>
+            <button onclick="removeFile('${fileId}')"
+                class="ml-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full p-1 transition-colors duration-200 flex-shrink-0"
+                title="Remove file">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
             </button>
         `;
-        fileListElement.appendChild(fileElement);
+        gridContainer.appendChild(fileElement);
     });
+
+    fileListElement.appendChild(gridContainer);
+
+    // 添加文件数量统计
+    const countElement = document.createElement('div');
+    countElement.className = 'mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500 text-center';
+
+    // 使用翻译函数显示文件计数
+    const countText = (typeof getTranslation === 'function') ?
+        `${getTranslation('filesSelected')} ${selectedFiles.size} ${getTranslation('files')}` :
+        `Selected ${selectedFiles.size} files`;
+
+    countElement.textContent = countText;
+    fileListElement.appendChild(countElement);
 }
 
 // 移除文件
 function removeFile(fileId) {
-    selectedFiles.delete(fileId);
-    updateFileList();
+    if (selectedFiles.has(fileId)) {
+        selectedFiles.delete(fileId);
+        updateFileList();
+        updateFileStatus(Array.from(selectedFiles.values()));
+
+        // 如果没有文件了，隐藏容器
+        if (selectedFiles.size === 0) {
+            const selectedFilesContainer = document.getElementById('selectedFiles');
+            selectedFilesContainer.classList.add('hidden');
+        }
+    }
 }
+
+// 清除所有文件
+function clearAllFiles() {
+    selectedFiles.clear();
+    const selectedFilesContainer = document.getElementById('selectedFiles');
+    selectedFilesContainer.classList.add('hidden');
+    updateFileStatus([]);
+}
+
+
 
 // 使用正则表达式计算Token数的函数
 function roughTokenCount(text) {
@@ -428,7 +323,7 @@ async function processFiles() {
     const allFiles = [...filteredFolderFiles, ...individualFiles];
     
     if (allFiles.length === 0) {
-        alert(TRANSLATIONS[currentLang].pleaseSelectFiles);
+        alert(getTranslation('pleaseSelectFiles'));
         return;
     }
 
@@ -438,13 +333,21 @@ async function processFiles() {
     skippedFiles = 0;
     totalChars = 0;
     totalRegexTokens = 0;
-    
+
+    // 清除文件详情数据
+    clearFileDetails();
+
+    // 更新状态为处理中
+    updateStatus('processing', 'processing');
+
     let output = '';
     const status = document.getElementById('status');
     // 保留黑名单更新的消息，不清空状态区域
     // status.innerHTML = '';
-    
-    document.getElementById('progress').classList.remove('hidden');
+
+    // 显示进度卡片和统计卡片
+    document.getElementById('progressCard').classList.remove('hidden');
+    document.getElementById('statsCard').classList.remove('hidden');
     
     // 如果是仅文件树模式，隐藏统计信息和合并内容区域
     if (isTreeOnlyMode) {
@@ -482,11 +385,17 @@ async function processFiles() {
 
             if (!isProcessableFile(file)) {
                 skippedFiles++;
+
+                // 记录跳过的文件详情
+                updateFileDetails(file, 'skipped', {
+                    reason: '不支持的文件类型或二进制文件'
+                });
+
                 status.innerHTML += `
                     <div class="flex items-center space-x-2 text-sm mb-2">
                         <span class="text-yellow-500">⚠</span>
                         <span class="text-gray-700">${filePath}</span>
-                        <span class="text-yellow-500">${TRANSLATIONS[currentLang].willBeSkipped}</span>
+                        <span class="text-yellow-500">${getTranslation('willBeSkipped')}</span>
                     </div>`;
                 updateProgress();
                 continue;
@@ -501,32 +410,50 @@ async function processFiles() {
 
             const charCount = content.length;
             const tokens = calculateTokens(content);
-            
+
             totalChars += charCount;
             totalRegexTokens += tokens.regex;
-            
-            output += `=== ${TRANSLATIONS[currentLang].filePath}: ${filePath} ===\n`;
-            output += `${TRANSLATIONS[currentLang].totalChars}: ${charCount}\n`;
+
+            // 记录处理成功的文件详情
+            updateFileDetails(file, 'processed', {
+                chars: charCount,
+                tokens: tokens.regex
+            });
+            updateFileDetails(file, 'characters', {
+                chars: charCount
+            });
+            updateFileDetails(file, 'tokens', {
+                tokens: tokens.regex
+            });
+
+            output += `=== ${getTranslation('filePath')}: ${filePath} ===\n`;
+            output += `${getTranslation('totalChars')}: ${charCount}\n`;
             output += `Regex Tokens: ${tokens.regex}\n\n`;
             output += content;
             output += '\n\n' + '='.repeat(50) + '\n\n';
-            
+
             status.innerHTML += `
                 <div class="flex items-center space-x-2 text-sm mb-2">
                     <span class="text-green-500">✓</span>
                     <span class="text-gray-700">${filePath}</span>
                     <span class="text-gray-500">
-                        (${charCount.toLocaleString()} ${TRANSLATIONS[currentLang].chars}, 
+                        (${charCount.toLocaleString()} ${getTranslation('chars')},
                         Regex: ${tokens.regex.toLocaleString()} tokens)
                     </span>
                 </div>`;
         } catch (error) {
             skippedFiles++;
+
+            // 记录错误文件详情
+            updateFileDetails(file, 'skipped', {
+                reason: '文件读取错误: ' + error.message
+            });
+
             status.innerHTML += `
                 <div class="flex items-center space-x-2 text-sm mb-2">
                     <span class="text-red-500">✗</span>
                     <span class="text-gray-700">${file.webkitRelativePath || file.name}</span>
-                    <span class="text-red-500">${TRANSLATIONS[currentLang].fileReadError}</span>
+                    <span class="text-red-500">${getTranslation('fileReadError')}</span>
                 </div>`;
         }
         
@@ -537,21 +464,15 @@ async function processFiles() {
     document.getElementById('totalFileCount').textContent = (totalFiles - skippedFiles).toLocaleString();
     document.getElementById('skippedFileCount').textContent = skippedFiles.toLocaleString();
     document.getElementById('totalCharCount').textContent = totalChars.toLocaleString();
-    document.getElementById('gpt3TokenCount').textContent = totalRegexTokens.toLocaleString();
-    // 隐藏第二个和第三个token计数
-    const gpt4Element = document.getElementById('gpt4TokenCount');
-    if (gpt4Element) {
-        gpt4Element.closest('.flex').style.display = 'none';
-    }
-    const claudeElement = document.getElementById('claudeTokenCount');
-    if (claudeElement) {
-        claudeElement.closest('.flex').style.display = 'none';
-    }
+    document.getElementById('totalTokenCount').textContent = totalRegexTokens.toLocaleString();
 
     if (totalChars > 0) {
         // 保存合并内容并更新复制框
         mergedContent = output;
         document.getElementById('copyArea').value = output;
+
+        // 显示结果卡片
+        document.getElementById('resultCard').classList.remove('hidden');
     }
 
     // 生成文件夹结构
@@ -561,6 +482,10 @@ async function processFiles() {
     } else {
         document.getElementById('folderStructure').classList.add('hidden');
     }
+
+    // 更新状态为完成
+    const processedCount = totalFiles - skippedFiles;
+    updateProcessCompleteStatus(processedCount, skippedFiles);
 }
 
 function readFile(file) {
@@ -585,7 +510,7 @@ function downloadOutput(content) {
     const a = document.createElement('a');
     a.href = url;
     // 修改下载文件名的语言
-    const fileName = currentLang === 'zh' ? '文件内容汇总_' : 'content_summary_';
+    const fileName = getCurrentLanguage() === 'zh' ? '文件内容汇总_' : 'content_summary_';
     a.download = fileName + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.txt';
     document.body.appendChild(a);
     a.click();
@@ -593,22 +518,178 @@ function downloadOutput(content) {
     URL.revokeObjectURL(url);
 }
 
+// 渲染文件夹黑名单标签
+function renderFolderBlacklistTags() {
+    const container = document.getElementById('folderBlacklistTags');
+    if (!container) return;
 
+    container.innerHTML = '';
+
+    BLACKLIST_FOLDERS.forEach(folder => {
+        const tag = createBlacklistTag(folder, 'folder');
+        container.appendChild(tag);
+    });
+
+    // 更新隐藏的输入框以保持兼容性
+    const blacklistInput = document.getElementById('blacklistInput');
+    if (blacklistInput) {
+        blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
+    }
+}
+
+// 渲染扩展名黑名单标签
+function renderExtensionBlacklistTags() {
+    const container = document.getElementById('extensionBlacklistTags');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    BLACKLIST_EXTENSIONS.forEach(extension => {
+        const tag = createBlacklistTag(extension, 'extension');
+        container.appendChild(tag);
+    });
+
+    // 更新隐藏的输入框以保持兼容性
+    const blacklistExtInput = document.getElementById('blacklistExtInput');
+    if (blacklistExtInput) {
+        blacklistExtInput.value = BLACKLIST_EXTENSIONS.join('\n');
+    }
+}
+
+// 创建黑名单标签元素
+function createBlacklistTag(text, type) {
+    const tag = document.createElement('div');
+    tag.className = 'inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs';
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '×';
+    deleteBtn.className = 'text-blue-600 hover:text-red-600 hover:bg-red-100 rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold transition-colors';
+    deleteBtn.onclick = () => removeFromBlacklist(text, type);
+
+    tag.appendChild(textSpan);
+    tag.appendChild(deleteBtn);
+
+    return tag;
+}
+
+// 添加文件夹到黑名单
+function addFolderToBlacklist() {
+    const input = document.getElementById('newFolderInput');
+    const folder = input.value.trim();
+
+    if (folder && !BLACKLIST_FOLDERS.includes(folder)) {
+        BLACKLIST_FOLDERS.push(folder);
+        renderFolderBlacklistTags();
+        updateFileStats();
+        input.value = '';
+
+        // 显示成功提示
+        showBlacklistUpdateStatus();
+    }
+}
+
+// 将函数暴露到全局作用域
+window.addFolderToBlacklist = addFolderToBlacklist;
+
+// 添加扩展名到黑名单
+function addExtensionToBlacklist() {
+    const input = document.getElementById('newExtensionInput');
+    let extension = input.value.trim();
+
+    if (extension) {
+        // 确保扩展名格式正确（以.开头）
+        if (!extension.startsWith('.')) {
+            extension = '.' + extension;
+        }
+
+        if (!BLACKLIST_EXTENSIONS.includes(extension)) {
+            BLACKLIST_EXTENSIONS.push(extension);
+            renderExtensionBlacklistTags();
+            updateFileStats();
+            input.value = '';
+
+            // 显示成功提示
+            showBlacklistUpdateStatus();
+        }
+    }
+}
+
+// 将函数暴露到全局作用域
+window.addExtensionToBlacklist = addExtensionToBlacklist;
+
+// 从黑名单中移除项目
+function removeFromBlacklist(item, type) {
+    if (type === 'folder') {
+        const index = BLACKLIST_FOLDERS.indexOf(item);
+        if (index > -1) {
+            BLACKLIST_FOLDERS.splice(index, 1);
+            renderFolderBlacklistTags();
+        }
+    } else if (type === 'extension') {
+        const index = BLACKLIST_EXTENSIONS.indexOf(item);
+        if (index > -1) {
+            BLACKLIST_EXTENSIONS.splice(index, 1);
+            renderExtensionBlacklistTags();
+        }
+    }
+
+    updateFileStats();
+    showBlacklistUpdateStatus();
+}
+
+// 显示黑名单更新状态
+function showBlacklistUpdateStatus() {
+    const status = document.getElementById('status');
+    if (status) {
+        status.innerHTML = `
+            <div class="flex items-center space-x-2 text-sm mb-2 bg-green-50 p-3 rounded">
+                <span class="text-green-500">✓</span>
+                <span class="text-green-700">黑名单设置已更新</span>
+            </div>
+        `;
+
+        // 3秒后清除状态
+        setTimeout(() => {
+            status.innerHTML = '';
+        }, 3000);
+    }
+}
 
 // 页面加载时初始化黑名单输入框
 document.addEventListener('DOMContentLoaded', function() {
     const blacklistInput = document.getElementById('blacklistInput');
-    blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
-    
+    if (blacklistInput) {
+        blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
+    }
+
     // 初始化扩展名黑名单输入框
     const blacklistExtInput = document.getElementById('blacklistExtInput');
-    blacklistExtInput.value = BLACKLIST_EXTENSIONS.join('\n');
-    
-    // 更新选择的文件统计
+    if (blacklistExtInput) {
+        blacklistExtInput.value = BLACKLIST_EXTENSIONS.join('\n');
+    }
+
+    // 渲染标签式界面
+    renderFolderBlacklistTags();
+    renderExtensionBlacklistTags();
+
+    // 初始化语言模块
+    if (window.LanguageModule) {
+        window.LanguageModule.initLanguage();
+    }
+
+    // 更新选择的文件统计（在语言模块初始化之后）
     updateFileStats();
-    
-    // 初始化页面语言
-    updatePageLanguage();
+
+    // 添加gitignore文件选择监听器
+    const gitignoreInput = document.getElementById('gitignoreInput');
+    if (gitignoreInput) {
+        gitignoreInput.addEventListener('change', function(e) {
+            updateGitignoreStatus(e.target.files);
+        });
+    }
     
     // 初始化复制按钮事件
     document.getElementById('copyBtn').addEventListener('click', function() {
@@ -653,44 +734,291 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('ignoreGit').addEventListener('change', function() {
         updateBlacklistForGit(this.checked);
     });
+
+    // 添加回车键监听器用于快速添加
+    const newFolderInput = document.getElementById('newFolderInput');
+    if (newFolderInput) {
+        newFolderInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addFolderToBlacklist();
+            }
+        });
+    }
+
+    const newExtensionInput = document.getElementById('newExtensionInput');
+    if (newExtensionInput) {
+        newExtensionInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addExtensionToBlacklist();
+            }
+        });
+    }
 });
 
 // 保存黑名单设置
 function saveBlacklist() {
+    // 从隐藏的输入框读取数据（保持兼容性）
     const blacklistInput = document.getElementById('blacklistInput');
-    BLACKLIST_FOLDERS = blacklistInput.value
-        .split('\n')
-        .map(item => item.trim())
-        .filter(item => item !== '');
-    
+    if (blacklistInput && blacklistInput.value) {
+        BLACKLIST_FOLDERS = blacklistInput.value
+            .split('\n')
+            .map(item => item.trim())
+            .filter(item => item !== '');
+    }
+
     // 保存扩展名黑名单
     const blacklistExtInput = document.getElementById('blacklistExtInput');
-    BLACKLIST_EXTENSIONS = blacklistExtInput.value
-        .split('\n')
-        .map(item => {
-            // 确保扩展名格式正确（以.开头）
-            item = item.trim();
-            return item !== '' ? (item.startsWith('.') ? item : '.' + item) : '';
-        })
-        .filter(item => item !== '');
-    
+    if (blacklistExtInput && blacklistExtInput.value) {
+        BLACKLIST_EXTENSIONS = blacklistExtInput.value
+            .split('\n')
+            .map(item => {
+                // 确保扩展名格式正确（以.开头）
+                item = item.trim();
+                return item !== '' ? (item.startsWith('.') ? item : '.' + item) : '';
+            })
+            .filter(item => item !== '');
+    }
+
+    // 重新渲染标签界面
+    renderFolderBlacklistTags();
+    renderExtensionBlacklistTags();
+
     // 更新文件统计
     updateFileStats();
-    
-    // 显示保存成功提示 - 修改为在按钮旁边显示
-    const saveStatus = document.getElementById('saveStatus');
-    saveStatus.classList.remove('hidden');
-    saveStatus.style.opacity = '1';
-    
-    // 添加自动消失的效果
-    setTimeout(() => {
-        // 用淡出效果移除提示
-        saveStatus.style.opacity = '0';
-        setTimeout(() => {
-            saveStatus.classList.add('hidden');
-        }, 500);
-    }, 3000);
+
+    // 显示保存成功提示
+    showBlacklistUpdateStatus();
 }
+
+// 将函数暴露到全局作用域
+window.saveBlacklist = saveBlacklist;
+
+// 重置页面功能
+function resetPage() {
+    // 确认重置
+    if (!confirm('确定要重置页面吗？这将清除所有选择的文件和设置。')) {
+        return;
+    }
+
+    // 清除文件选择
+    selectedFiles.clear();
+    document.getElementById('fileInput').value = '';
+    document.getElementById('folderInput').value = '';
+    document.getElementById('gitignoreInput').value = '';
+
+    // 重置状态
+    updateStatus('ready', 'ready');
+
+    // 隐藏所有卡片
+    document.getElementById('selectedFiles').classList.add('hidden');
+    document.getElementById('progressCard').classList.add('hidden');
+    document.getElementById('statsCard').classList.add('hidden');
+    document.getElementById('resultCard').classList.add('hidden');
+
+    // 重置统计数据
+    totalFiles = 0;
+    processedFiles = 0;
+    skippedFiles = 0;
+    totalChars = 0;
+    totalRegexTokens = 0;
+    mergedContent = '';
+
+    // 重置显示
+    updateFileStats();
+    document.getElementById('copyArea').value = '';
+
+    // 重置状态文本
+    document.getElementById('fileStatus').textContent = '未选择文件';
+    document.getElementById('folderStatus').textContent = '未选择文件';
+    document.getElementById('gitignoreStatus').textContent = '未选择文件';
+
+    // 清除状态信息
+    document.getElementById('status').innerHTML = '';
+
+    console.log('页面已重置');
+}
+
+// 更新状态显示
+function updateStatus(status, messageKey, count = null) {
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+
+    if (!statusIndicator || !statusText) return;
+
+    // 移除所有状态类
+    statusIndicator.className = 'w-2 h-2 rounded-full';
+
+    switch(status) {
+        case 'ready':
+            statusIndicator.classList.add('bg-gray-400');
+            break;
+        case 'processing':
+            statusIndicator.classList.add('bg-blue-500', 'animate-pulse');
+            break;
+        case 'complete':
+            statusIndicator.classList.add('bg-green-500');
+            break;
+        case 'error':
+            statusIndicator.classList.add('bg-red-500');
+            break;
+    }
+
+    // 获取翻译文本并格式化
+    let displayMessage = '';
+    if (getTranslation && typeof getTranslation === 'function') {
+        if (messageKey === 'filesSelected' && count !== null) {
+            // 特殊处理文件选择状态
+            displayMessage = `${getTranslation('filesSelected')} ${count} ${getTranslation('files')}`;
+        } else {
+            displayMessage = getTranslation(messageKey);
+        }
+    } else {
+        displayMessage = messageKey; // 降级处理
+    }
+
+    statusText.textContent = displayMessage;
+}
+
+// 更新处理完成状态
+function updateProcessCompleteStatus(processedCount, skippedCount) {
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+
+    if (!statusIndicator || !statusText) return;
+
+    // 设置完成状态的样式
+    statusIndicator.className = 'w-2 h-2 rounded-full bg-green-500';
+
+    // 构建完成消息
+    let message = '';
+    if (getTranslation && typeof getTranslation === 'function') {
+        message = `${getTranslation('processComplete')} ${processedCount} ${getTranslation('processedFiles')} ${skippedCount} ${getTranslation('skippedFiles')}`;
+    } else {
+        message = `Processing complete! Processed ${processedCount} files, skipped ${skippedCount} files`;
+    }
+
+    statusText.textContent = message;
+}
+
+// 存储文件详细信息
+let fileDetails = {
+    processed: [],
+    skipped: [],
+    characters: [],
+    tokens: []
+};
+
+// 显示文件详情
+function showFileDetails(type) {
+    const detailsArea = document.getElementById('detailsArea');
+    const detailsTitle = document.getElementById('detailsTitle');
+    const detailsContent = document.getElementById('detailsContent');
+
+    if (!detailsArea || !detailsTitle || !detailsContent) return;
+
+    let title = '';
+    let content = '';
+
+    switch(type) {
+        case 'processed':
+            title = '已处理文件';
+            if (fileDetails.processed.length === 0) {
+                content = '<div class="text-gray-500">暂无已处理文件</div>';
+            } else {
+                content = fileDetails.processed.map(file =>
+                    `<div class="py-1 border-b border-gray-200 last:border-b-0">
+                        <div class="font-medium">${file.name}</div>
+                        <div class="text-gray-500">${file.chars} 字符, ${file.tokens} tokens</div>
+                    </div>`
+                ).join('');
+            }
+            break;
+
+        case 'skipped':
+            title = '跳过文件';
+            if (fileDetails.skipped.length === 0) {
+                content = '<div class="text-gray-500">暂无跳过文件</div>';
+            } else {
+                content = fileDetails.skipped.map(file =>
+                    `<div class="py-1 border-b border-gray-200 last:border-b-0">
+                        <div class="font-medium">${file.name}</div>
+                        <div class="text-gray-500">原因: ${file.reason}</div>
+                    </div>`
+                ).join('');
+            }
+            break;
+
+        case 'characters':
+            title = '字符统计';
+            if (fileDetails.characters.length === 0) {
+                content = '<div class="text-gray-500">暂无字符统计</div>';
+            } else {
+                content = fileDetails.characters.map(file =>
+                    `<div class="py-1 border-b border-gray-200 last:border-b-0 flex justify-between">
+                        <span class="font-medium">${file.name}</span>
+                        <span class="text-gray-600">${file.chars.toLocaleString()} 字符</span>
+                    </div>`
+                ).join('');
+            }
+            break;
+
+        case 'tokens':
+            title = 'Token统计';
+            if (fileDetails.tokens.length === 0) {
+                content = '<div class="text-gray-500">暂无Token统计</div>';
+            } else {
+                content = fileDetails.tokens.map(file =>
+                    `<div class="py-1 border-b border-gray-200 last:border-b-0 flex justify-between">
+                        <span class="font-medium">${file.name}</span>
+                        <span class="text-gray-600">${file.tokens.toLocaleString()} tokens</span>
+                    </div>`
+                ).join('');
+            }
+            break;
+    }
+
+    detailsTitle.textContent = title;
+    detailsContent.innerHTML = content;
+    detailsArea.classList.remove('hidden');
+}
+
+// 隐藏文件详情
+function hideFileDetails() {
+    const detailsArea = document.getElementById('detailsArea');
+    if (detailsArea) {
+        detailsArea.classList.add('hidden');
+    }
+}
+
+// 更新文件详情数据
+function updateFileDetails(file, type, data) {
+    if (!fileDetails[type]) {
+        fileDetails[type] = [];
+    }
+
+    const existingIndex = fileDetails[type].findIndex(f => f.name === file.name);
+    if (existingIndex >= 0) {
+        fileDetails[type][existingIndex] = { name: file.name, ...data };
+    } else {
+        fileDetails[type].push({ name: file.name, ...data });
+    }
+}
+
+// 清除文件详情数据
+function clearFileDetails() {
+    fileDetails = {
+        processed: [],
+        skipped: [],
+        characters: [],
+        tokens: []
+    };
+}
+
+// 将函数暴露到全局作用域
+window.resetPage = resetPage;
+window.updateStatus = updateStatus;
+window.showFileDetails = showFileDetails;
+window.hideFileDetails = hideFileDetails;
 
 // 添加文件统计更新函数
 function updateFileStats() {
@@ -700,28 +1028,87 @@ function updateFileStats() {
         const blacklistedCount = Array.from(folderInput.files)
             .filter(file => isInBlacklist(file.webkitRelativePath))
             .length;
-        
-        const statsDiv = document.createElement('div');
-        statsDiv.className = 'text-sm text-gray-600 mt-2';
-        statsDiv.innerHTML = `
-            ${TRANSLATIONS[currentLang].totalFiles}：${totalCount} | 
-            ${TRANSLATIONS[currentLang].willBeSkipped}：${blacklistedCount} |
-            ${TRANSLATIONS[currentLang].actualProcessing}：${totalCount - blacklistedCount}
-        `;
-        
+
         const uploadArea = folderInput.closest('.upload-area');
-        const existingStats = uploadArea.querySelector('.text-sm:not(.text-gray-500)');
+
+        // 移除现有的统计信息（避免重复）
+        const existingStats = uploadArea.querySelector('.file-stats');
         if (existingStats) {
             existingStats.remove();
         }
+
+        // 创建新的统计信息元素
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'file-stats text-sm text-gray-600 mt-2';
+
+        // 确保翻译函数可用，否则使用默认文本
+        const totalFilesText = (typeof getTranslation === 'function') ? getTranslation('totalFiles') : 'Total Files';
+        const willBeSkippedText = (typeof getTranslation === 'function') ? getTranslation('willBeSkipped') : 'Will be Skipped';
+        const actualProcessingText = (typeof getTranslation === 'function') ? getTranslation('actualProcessing') : 'Actually Processing';
+
+        statsDiv.innerHTML = `
+            ${totalFilesText}：${totalCount} |
+            ${willBeSkippedText}：${blacklistedCount} |
+            ${actualProcessingText}：${totalCount - blacklistedCount}
+        `;
+
         uploadArea.appendChild(statsDiv);
     }
 }
 
-// 修改文件选择监听器
-document.getElementById('folderInput').addEventListener('change', function(e) {
+// 修改文件选择监听器（合并所有文件夹选择逻辑）
+document.getElementById('folderInput').addEventListener('change', async function(e) {
     updateFileStats();
+    updateFolderStatus(e.target.files);
+
+    // 更新状态
+    if (e.target.files && e.target.files.length > 0) {
+        updateStatus('ready', 'filesSelected', e.target.files.length);
+    } else {
+        updateStatus('ready', 'ready');
+    }
+
+    // 检查是否应该自动处理.gitignore
+    if (document.getElementById('useGitignore').checked) {
+        await checkForGitignoreInRoot(e.target.files);
+    }
 });
+
+// 更新文件夹选择状态
+function updateFolderStatus(files) {
+    const statusDiv = document.getElementById('folderStatus');
+    if (files && files.length > 0) {
+        statusDiv.textContent = getTranslation('folderSelected');
+        statusDiv.className = 'text-xs text-green-600 mb-2';
+    } else {
+        statusDiv.textContent = getTranslation('noFileSelected');
+        statusDiv.className = 'text-xs text-gray-600 mb-2';
+    }
+}
+
+// 更新文件选择状态
+function updateFileStatus(files) {
+    const statusDiv = document.getElementById('fileStatus');
+    if (files && files.length > 0) {
+        statusDiv.textContent = `${getTranslation('filesSelected')} ${files.length} ${getTranslation('files')}`;
+        statusDiv.className = 'text-xs text-green-600 mb-2';
+    } else {
+        statusDiv.textContent = getTranslation('noFileSelected');
+        statusDiv.className = 'text-xs text-gray-600 mb-2';
+    }
+}
+
+// 更新gitignore文件选择状态
+function updateGitignoreStatus(files) {
+    const statusDiv = document.getElementById('gitignoreStatus');
+    if (files && files.length > 0) {
+        statusDiv.textContent = files[0].name;
+        statusDiv.className = 'text-xs text-green-600 mb-2';
+    } else {
+        statusDiv.textContent = getTranslation('noFileSelected');
+        statusDiv.className = 'text-xs text-gray-600 mb-2';
+    }
+}
 
 // 添加生成文件夹结构的函数
 function generateFolderStructure(files) {
@@ -790,7 +1177,7 @@ async function processGitignoreFile() {
     const gitignoreInput = document.getElementById('gitignoreInput');
     
     if (gitignoreInput.files.length === 0) {
-        alert(TRANSLATIONS[currentLang].noGitignoreSelected);
+        alert(getTranslation('noGitignoreSelected'));
         return;
     }
     
@@ -804,28 +1191,28 @@ async function processGitignoreFile() {
         const rules = parseGitignoreRules(content);
         
         if (rules.length > 0) {
-            // 更新黑名单
-            const blacklistInput = document.getElementById('blacklistInput');
-            const currentBlacklist = blacklistInput.value
-                .split('\n')
-                .map(item => item.trim())
-                .filter(item => item !== '');
-            
             // 将新规则添加到黑名单中
-            const updatedBlacklist = [...new Set([...currentBlacklist, ...rules])];
-            
-            // 更新黑名单输入框
-            blacklistInput.value = updatedBlacklist.join('\n');
-            
-            // 保存黑名单
-            saveBlacklist();
+            const updatedBlacklist = [...new Set([...BLACKLIST_FOLDERS, ...rules])];
+            BLACKLIST_FOLDERS = updatedBlacklist;
+
+            // 更新隐藏的输入框以保持兼容性
+            const blacklistInput = document.getElementById('blacklistInput');
+            if (blacklistInput) {
+                blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
+            }
+
+            // 重新渲染标签界面
+            renderFolderBlacklistTags();
+
+            // 更新文件统计
+            updateFileStats();
             
             // 显示成功信息
             const status = document.getElementById('status');
             status.innerHTML = `
                 <div class="flex items-center space-x-2 text-sm mb-2 bg-green-50 p-3 rounded">
                     <span class="text-green-500">✓</span>
-                    <span class="text-green-700">${TRANSLATIONS[currentLang].gitignoreApplied.replace('{0}', rules.length)}</span>
+                    <span class="text-green-700">${getTranslation('gitignoreApplied', rules.length)}</span>
                 </div>
             `;
         }
@@ -834,16 +1221,7 @@ async function processGitignoreFile() {
     }
 }
 
-// 修改文件夹输入事件，添加.gitignore自动检测
-document.getElementById('folderInput').addEventListener('change', async function(e) {
-    // 更新文件统计
-    updateFileStats();
-    
-    // 检查是否应该自动处理.gitignore
-    if (document.getElementById('useGitignore').checked) {
-        await checkForGitignoreInRoot(e.target.files);
-    }
-});
+// 注意：文件夹输入事件监听器已经在上面合并了，这里移除重复的监听器
 
 // 检查根目录是否有.gitignore文件
 async function checkForGitignoreInRoot(files) {
@@ -851,7 +1229,7 @@ async function checkForGitignoreInRoot(files) {
     status.innerHTML = `
         <div class="flex items-center space-x-2 text-sm mb-2 bg-blue-50 p-3 rounded">
             <span class="text-blue-500">ℹ</span>
-            <span class="text-blue-700">${TRANSLATIONS[currentLang].scanningForGitignore}</span>
+            <span class="text-blue-700">${getTranslation('scanningForGitignore')}</span>
         </div>
     `;
     
@@ -893,7 +1271,7 @@ async function checkForGitignoreInRoot(files) {
                         status.innerHTML = `
                             <div class="flex items-center space-x-2 text-sm mb-2 bg-green-50 p-3 rounded">
                                 <span class="text-green-500">✓</span>
-                                <span class="text-green-700">${TRANSLATIONS[currentLang].gitignoreFoundAuto.replace('{0}', rules.length)}</span>
+                                <span class="text-green-700">${getTranslation('gitignoreFoundAuto', rules.length)}</span>
                             </div>
                         `;
                         
@@ -912,27 +1290,28 @@ async function checkForGitignoreInRoot(files) {
 
 // 更新黑名单中的.git设置
 function updateBlacklistForGit(ignoreGit) {
-    const blacklistInput = document.getElementById('blacklistInput');
-    
-    // 获取当前黑名单内容，排除.git项
-    const currentBlacklist = blacklistInput.value
-        .split('\n')
-        .map(item => item.trim())
-        .filter(item => item !== '' && item !== '.git');
-    
+    // 从当前黑名单中移除.git项
+    BLACKLIST_FOLDERS = BLACKLIST_FOLDERS.filter(item => item !== '.git');
+
     // 根据选项决定是否添加.git
     if (ignoreGit) {
-        currentBlacklist.push('.git');
+        BLACKLIST_FOLDERS.push('.git');
     }
-    
-    // 更新文本框内容
-    blacklistInput.value = currentBlacklist.join('\n');
-    
-    // 保存设置
-    saveBlacklist();
-    
+
+    // 更新隐藏的输入框以保持兼容性
+    const blacklistInput = document.getElementById('blacklistInput');
+    if (blacklistInput) {
+        blacklistInput.value = BLACKLIST_FOLDERS.join('\n');
+    }
+
+    // 重新渲染标签界面
+    renderFolderBlacklistTags();
+
     // 更新文件统计
     updateFileStats();
+
+    // 显示更新状态
+    showBlacklistUpdateStatus();
 }
 
 // 新UI交互代码
@@ -977,73 +1356,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // 定期同步元素状态
     setInterval(syncElements, 100);
 
-    // 更新状态卡片
-    function updateStatusCard(message, type = 'info') {
-        const statusCard = document.getElementById('statusCard');
-        if (statusCard) {
-            const statusText = statusCard.querySelector('span');
-            const statusDot = statusCard.querySelector('.w-2.h-2');
-            
-            if (statusText) {
-                statusText.textContent = message;
-            }
-            
-            if (statusDot) {
-                statusDot.className = 'w-2 h-2 rounded-full';
-                switch (type) {
-                    case 'success':
-                        statusDot.classList.add('bg-green-400');
-                        break;
-                    case 'error':
-                        statusDot.classList.add('bg-red-400');
-                        break;
-                    case 'processing':
-                        statusDot.classList.add('bg-blue-400');
-                        break;
-                    default:
-                        statusDot.classList.add('bg-gray-400');
-                }
-            }
-        }
-    }
+    // 移除了冲突的updateStatusCard函数，统一使用updateStatus
 
-    // 监听处理状态变化
-    const originalProcessFiles = window.processFiles;
-    window.processFiles = function() {
-        updateStatusCard('正在处理...', 'processing');
-        return originalProcessFiles.apply(this, arguments);
-    };
+    // 先将processFiles函数赋值给window对象
+    window.processFiles = processFiles;
 
-    // 监听文件选择变化
-    function handleFileSelection() {
-        const folderInput = document.getElementById('folderInput');
-        const fileInput = document.getElementById('fileInput');
-        
-        if (folderInput && folderInput.files.length > 0) {
-            updateStatusCard(`已选择 ${folderInput.files.length} 个文件`, 'success');
-        } else if (fileInput && fileInput.files.length > 0) {
-            updateStatusCard(`已选择 ${fileInput.files.length} 个文件`, 'success');
-        } else {
-            updateStatusCard('准备就绪', 'info');
-        }
-    }
+    // 将updateFileStats函数也赋值给window对象，以便语言模块可以调用
+    window.updateFileStats = updateFileStats;
 
-    // 绑定文件输入事件
-    const folderInput = document.getElementById('folderInput');
-    const fileInput = document.getElementById('fileInput');
-    
-    if (folderInput) {
-        folderInput.addEventListener('change', handleFileSelection);
-    }
-    
-    if (fileInput) {
-        fileInput.addEventListener('change', handleFileSelection);
-    }
+    // 将removeFile函数赋值给window对象，以便HTML onclick可以调用
+    window.removeFile = removeFile;
 
-    // 初始化语言
-    if (currentLang === 'zh') {
-        updatePageLanguage();
-    }
+    // 将clearAllFiles函数赋值给window对象
+    window.clearAllFiles = clearAllFiles;
+
+    // 移除冲突的processFiles包装器，使用统一的状态更新系统
+
+    // 移除重复的文件选择监听器，已在上面的代码中处理
+
+
 });
 
 // 重写原有的显示/隐藏逻辑以适应新UI
