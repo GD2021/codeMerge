@@ -1,3 +1,54 @@
+/* 字体定义 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+/* 全局字体设置 */
+* {
+    font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* 中文优化字体 */
+:lang(zh), :lang(zh-CN), :lang(zh-TW) {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 英文优化字体 */
+:lang(en) {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* 代码字体 */
+code, pre, .font-mono {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+}
+
+/* 字体渲染优化 */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
+    font-variant-ligatures: common-ligatures;
+}
+
+/* 标题字体优化 */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+/* 正文字体优化 */
+p, span, div {
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+}
+
+/* 按钮字体优化 */
+button {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
 .tooltip {
     position: relative;
     display: inline-block;
@@ -156,9 +207,6 @@ html {
 }
 
 /* 文本选择优化 */
-.font-mono {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-}
 
 /* 小屏幕下的网格优化 */
 @media (max-width: 768px) {

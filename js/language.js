@@ -13,7 +13,7 @@ const TRANSLATIONS = {
         tokenCalcModel: 'Token计算模型',
         blacklistSettings: '黑名单设置',
         saveSettings: '保存设置',
-        blacklistFoldersDesc: '这些文件夹将被自动跳过处理：',
+        blacklistFoldersDesc: '文件夹：这些文件夹将被自动跳过处理：',
         blacklistFoldersTip: '提示：每行输入一个文件夹名称，这些文件夹及其子文件夹中的文件将被跳过。',
         blacklistExtDesc: '这些扩展名的文件将被自动跳过处理：',
         blacklistExtTip: '提示：每行输入一个文件扩展名（如 .jpg 或 jpg），这些扩展名的文件将被跳过。',
@@ -72,6 +72,15 @@ const TRANSLATIONS = {
         stepStart: '开始处理',
         advancedSettings: '高级设置',
         basicOptions: '基础选项',
+        outputFormat: '输出格式',
+        formatDefault: '默认格式',
+        formatDefaultDesc: '原始格式，包含文件统计信息',
+        formatXML: 'XML格式',
+        formatXMLDesc: '结构化XML格式，包含目录树',
+        formatTXT: '纯文本格式',
+        formatTXTDesc: '简洁的文本格式，使用分隔符',
+        formatMD: 'Markdown格式',
+        formatMDDesc: 'Markdown格式，支持语法高亮',
         status: '状态',
         ready: '准备就绪',
         reset: '重置',
@@ -92,7 +101,24 @@ const TRANSLATIONS = {
         starOnGithub: '在GitHub上给我Star',
         viewOnGithub: '查看源码',
         githubDescription: '如果这个工具对你有帮助，请在GitHub上给我一个Star！',
-        openSource: '开源项目'
+        openSource: '开源项目',
+        add: '添加',
+        processedFiles: '已处理文件',
+        skippedFiles: '跳过文件',
+        characterStats: '字符统计',
+        tokenStats: 'Token统计',
+        noProcessedFiles: '暂无已处理文件',
+        noCharacterStats: '暂无字符统计',
+        noTokenStats: '暂无Token统计',
+        characters: '字符',
+        tokens: 'tokens',
+        blacklistUpdated: '黑名单设置已更新',
+        resetConfirm: '确定要重置页面吗？这将清除所有选择的文件和设置。',
+        pageReset: '页面已重置',
+        noFileSelected: '未选择文件',
+        compressionError: '压缩代码时出错',
+        fileReadFailed: '文件读取失败',
+        downloadFileName: '文件内容汇总_'
     },
     en: {
         title: 'Code File Content Extraction and Statistics Tool',
@@ -107,7 +133,7 @@ const TRANSLATIONS = {
         tokenCalcModel: 'Token Calculation Model',
         blacklistSettings: 'Blacklist Settings',
         saveSettings: 'Save Settings',
-        blacklistFoldersDesc: 'These folders will be automatically skipped:',
+        blacklistFoldersDesc: 'Folder: These folders will be automatically skipped:',
         blacklistFoldersTip: 'Tip: Enter one folder name per line. Files in these folders and their subfolders will be skipped.',
         blacklistExtDesc: 'Files with these extensions will be automatically skipped:',
         blacklistExtTip: 'Tip: Enter one file extension per line (e.g. .jpg or jpg). Files with these extensions will be skipped.',
@@ -166,6 +192,15 @@ const TRANSLATIONS = {
         stepStart: 'Start Processing',
         advancedSettings: 'Advanced Settings',
         basicOptions: 'Basic Options',
+        outputFormat: 'Output Format',
+        formatDefault: 'Default Format',
+        formatDefaultDesc: 'Original format with file statistics',
+        formatXML: 'XML Format',
+        formatXMLDesc: 'Structured XML format with directory tree',
+        formatTXT: 'Plain Text Format',
+        formatTXTDesc: 'Clean text format with separators',
+        formatMD: 'Markdown Format',
+        formatMDDesc: 'Markdown format with syntax highlighting',
         status: 'Status',
         ready: 'Ready',
         reset: 'Reset',
@@ -186,7 +221,24 @@ const TRANSLATIONS = {
         starOnGithub: 'Star me on GitHub',
         viewOnGithub: 'View Source',
         githubDescription: 'If this tool helps you, please give me a star on GitHub!',
-        openSource: 'Open Source'
+        openSource: 'Open Source',
+        add: 'Add',
+        processedFiles: 'Processed Files',
+        skippedFiles: 'Skipped Files',
+        characterStats: 'Character Statistics',
+        tokenStats: 'Token Statistics',
+        noProcessedFiles: 'No processed files',
+        noCharacterStats: 'No character statistics',
+        noTokenStats: 'No token statistics',
+        characters: 'characters',
+        tokens: 'tokens',
+        blacklistUpdated: 'Blacklist settings updated',
+        resetConfirm: 'Are you sure you want to reset the page? This will clear all selected files and settings.',
+        pageReset: 'Page has been reset',
+        noFileSelected: 'No file selected',
+        compressionError: 'Error compressing code',
+        fileReadFailed: 'File read failed',
+        downloadFileName: 'content_summary_'
     }
 };
 
@@ -205,6 +257,9 @@ function toggleLanguage() {
 
 // 更新页面语言
 function updatePageLanguage() {
+    // 更新页面语言属性
+    document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+
     // 保存当前状态
     const currentStatusText = document.getElementById('statusText');
     const currentStatusIndicator = document.getElementById('statusIndicator');

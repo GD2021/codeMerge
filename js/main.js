@@ -208,7 +208,7 @@ function compressCode(code, fileExtension) {
                 .trim();
         }
     } catch (error) {
-        console.error('压缩代码时出错:', error);
+        console.error(getTranslation('compressionError') + ':', error);
         return code;
     }
 }
@@ -308,29 +308,35 @@ async function processFiles() {
         })
         .filter(item => item !== '');
     
-    // 过滤掉黑名单文件
-    const filteredFolderFiles = folderFiles.filter(file => {
+    // 过滤掉黑名单文件，但记录被跳过的文件
+    const filteredFolderFiles = [];
+    let blacklistSkippedCount = 0;
+
+    folderFiles.forEach(file => {
         const filePath = file.webkitRelativePath;
-        
+
         // 检查是否在黑名单中
         if (isInBlacklist(filePath)) {
-            return false;
+            // 只计数，不记录详细信息（用户无法查看）
+            blacklistSkippedCount++;
+            return;
         }
-        
-        return true;
+
+        filteredFolderFiles.push(file);
     });
     
     const allFiles = [...filteredFolderFiles, ...individualFiles];
-    
-    if (allFiles.length === 0) {
+
+    if (allFiles.length === 0 && blacklistSkippedCount === 0) {
         alert(getTranslation('pleaseSelectFiles'));
         return;
     }
 
     // 重置计数器
-    totalFiles = allFiles.length;
+    // totalFiles 应该包含所有原始文件数（包括被黑名单过滤的）
+    totalFiles = folderFiles.length + individualFiles.length;
     processedFiles = 0;
-    skippedFiles = 0;
+    skippedFiles = blacklistSkippedCount; // 初始化为黑名单跳过的文件数
     totalChars = 0;
     totalRegexTokens = 0;
 
@@ -340,7 +346,6 @@ async function processFiles() {
     // 更新状态为处理中
     updateStatus('processing', 'processing');
 
-    let output = '';
     const status = document.getElementById('status');
     // 保留黑名单更新的消息，不清空状态区域
     // status.innerHTML = '';
@@ -376,20 +381,18 @@ async function processFiles() {
         return;
     }
 
+    // 存储处理后的文件数据，用于最终合并
+    const processedFileData = [];
+
     // 完整处理模式
     for (const file of allFiles) {
         try {
             const filePath = file.webkitRelativePath || file.name;
-            
+
             // 文件过滤逻辑已经在筛选阶段处理，不需要重复检查黑名单
 
             if (!isProcessableFile(file)) {
                 skippedFiles++;
-
-                // 记录跳过的文件详情
-                updateFileDetails(file, 'skipped', {
-                    reason: '不支持的文件类型或二进制文件'
-                });
 
                 status.innerHTML += `
                     <div class="flex items-center space-x-2 text-sm mb-2">
@@ -402,7 +405,7 @@ async function processFiles() {
             }
 
             let content = await readFile(file);
-            
+
             if (shouldCompress) {
                 const fileExtension = filePath.split('.').pop();
                 content = compressCode(content, fileExtension);
@@ -426,11 +429,15 @@ async function processFiles() {
                 tokens: tokens.regex
             });
 
-            output += `=== ${getTranslation('filePath')}: ${filePath} ===\n`;
-            output += `${getTranslation('totalChars')}: ${charCount}\n`;
-            output += `Regex Tokens: ${tokens.regex}\n\n`;
-            output += content;
-            output += '\n\n' + '='.repeat(50) + '\n\n';
+            // 将文件数据添加到处理列表中，用于最终合并
+            processedFileData.push({
+                filePath: filePath,
+                content: content,
+                stats: {
+                    charCount: charCount,
+                    tokens: tokens.regex
+                }
+            });
 
             status.innerHTML += `
                 <div class="flex items-center space-x-2 text-sm mb-2">
@@ -443,11 +450,6 @@ async function processFiles() {
                 </div>`;
         } catch (error) {
             skippedFiles++;
-
-            // 记录错误文件详情
-            updateFileDetails(file, 'skipped', {
-                reason: '文件读取错误: ' + error.message
-            });
 
             status.innerHTML += `
                 <div class="flex items-center space-x-2 text-sm mb-2">
@@ -467,6 +469,36 @@ async function processFiles() {
     document.getElementById('totalTokenCount').textContent = totalRegexTokens.toLocaleString();
 
     if (totalChars > 0) {
+        // 获取选择的输出格式
+        const selectedFormat = document.querySelector('input[name="outputFormat"]:checked').value;
+        let output = '';
+
+        // 根据选择的格式调用相应的合并函数
+        switch (selectedFormat) {
+            case 'xml':
+                output = window.mergeFileContentsXML(processedFileData, {
+                    includeDirectoryStructure: true
+                });
+                break;
+            case 'txt':
+                output = window.mergeFileContentsTXT(processedFileData, {
+                    includeDirectoryStructure: true
+                });
+                break;
+            case 'md':
+                output = window.mergeFileContentsMD(processedFileData, {
+                    includeDirectoryStructure: true
+                });
+                break;
+            case 'default':
+            default:
+                output = window.mergeFileContents(processedFileData, {
+                    includeStats: true,
+                    useTranslation: true
+                });
+                break;
+        }
+
         // 保存合并内容并更新复制框
         mergedContent = output;
         document.getElementById('copyArea').value = output;
@@ -492,7 +524,7 @@ function readFile(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error('文件读取失败'));
+        reader.onerror = () => reject(new Error(getTranslation('fileReadFailed')));
         reader.readAsText(file);
     });
 }
@@ -505,17 +537,10 @@ function updateProgress() {
 }
 
 function downloadOutput(content) {
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    // 修改下载文件名的语言
-    const fileName = getCurrentLanguage() === 'zh' ? '文件内容汇总_' : 'content_summary_';
-    a.download = fileName + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // 获取当前选择的输出格式
+    const selectedFormat = document.querySelector('input[name="outputFormat"]:checked')?.value || 'default';
+    // 使用新的contentMerger模块的下载功能
+    window.downloadMergedContent(content, null, selectedFormat);
 }
 
 // 渲染文件夹黑名单标签
@@ -647,7 +672,7 @@ function showBlacklistUpdateStatus() {
         status.innerHTML = `
             <div class="flex items-center space-x-2 text-sm mb-2 bg-green-50 p-3 rounded">
                 <span class="text-green-500">✓</span>
-                <span class="text-green-700">黑名单设置已更新</span>
+                <span class="text-green-700">${getTranslation('blacklistUpdated')}</span>
             </div>
         `;
 
@@ -796,7 +821,7 @@ window.saveBlacklist = saveBlacklist;
 // 重置页面功能
 function resetPage() {
     // 确认重置
-    if (!confirm('确定要重置页面吗？这将清除所有选择的文件和设置。')) {
+    if (!confirm(getTranslation('resetConfirm'))) {
         return;
     }
 
@@ -828,14 +853,14 @@ function resetPage() {
     document.getElementById('copyArea').value = '';
 
     // 重置状态文本
-    document.getElementById('fileStatus').textContent = '未选择文件';
-    document.getElementById('folderStatus').textContent = '未选择文件';
-    document.getElementById('gitignoreStatus').textContent = '未选择文件';
+    document.getElementById('fileStatus').textContent = getTranslation('noFileSelected');
+    document.getElementById('folderStatus').textContent = getTranslation('noFileSelected');
+    document.getElementById('gitignoreStatus').textContent = getTranslation('noFileSelected');
 
     // 清除状态信息
     document.getElementById('status').innerHTML = '';
 
-    console.log('页面已重置');
+    console.log(getTranslation('pageReset'));
 }
 
 // 更新状态显示
@@ -903,7 +928,6 @@ function updateProcessCompleteStatus(processedCount, skippedCount) {
 // 存储文件详细信息
 let fileDetails = {
     processed: [],
-    skipped: [],
     characters: [],
     tokens: []
 };
@@ -921,56 +945,44 @@ function showFileDetails(type) {
 
     switch(type) {
         case 'processed':
-            title = '已处理文件';
+            title = getTranslation('processedFiles');
             if (fileDetails.processed.length === 0) {
-                content = '<div class="text-gray-500">暂无已处理文件</div>';
+                content = `<div class="text-gray-500">${getTranslation('noProcessedFiles')}</div>`;
             } else {
                 content = fileDetails.processed.map(file =>
                     `<div class="py-1 border-b border-gray-200 last:border-b-0">
                         <div class="font-medium">${file.name}</div>
-                        <div class="text-gray-500">${file.chars} 字符, ${file.tokens} tokens</div>
+                        <div class="text-gray-500">${file.chars} ${getTranslation('characters')}, ${file.tokens} ${getTranslation('tokens')}</div>
                     </div>`
                 ).join('');
             }
             break;
 
-        case 'skipped':
-            title = '跳过文件';
-            if (fileDetails.skipped.length === 0) {
-                content = '<div class="text-gray-500">暂无跳过文件</div>';
-            } else {
-                content = fileDetails.skipped.map(file =>
-                    `<div class="py-1 border-b border-gray-200 last:border-b-0">
-                        <div class="font-medium">${file.name}</div>
-                        <div class="text-gray-500">原因: ${file.reason}</div>
-                    </div>`
-                ).join('');
-            }
-            break;
+
 
         case 'characters':
-            title = '字符统计';
+            title = getTranslation('characterStats');
             if (fileDetails.characters.length === 0) {
-                content = '<div class="text-gray-500">暂无字符统计</div>';
+                content = `<div class="text-gray-500">${getTranslation('noCharacterStats')}</div>`;
             } else {
                 content = fileDetails.characters.map(file =>
                     `<div class="py-1 border-b border-gray-200 last:border-b-0 flex justify-between">
                         <span class="font-medium">${file.name}</span>
-                        <span class="text-gray-600">${file.chars.toLocaleString()} 字符</span>
+                        <span class="text-gray-600">${file.chars.toLocaleString()} ${getTranslation('characters')}</span>
                     </div>`
                 ).join('');
             }
             break;
 
         case 'tokens':
-            title = 'Token统计';
+            title = getTranslation('tokenStats');
             if (fileDetails.tokens.length === 0) {
-                content = '<div class="text-gray-500">暂无Token统计</div>';
+                content = `<div class="text-gray-500">${getTranslation('noTokenStats')}</div>`;
             } else {
                 content = fileDetails.tokens.map(file =>
                     `<div class="py-1 border-b border-gray-200 last:border-b-0 flex justify-between">
                         <span class="font-medium">${file.name}</span>
-                        <span class="text-gray-600">${file.tokens.toLocaleString()} tokens</span>
+                        <span class="text-gray-600">${file.tokens.toLocaleString()} ${getTranslation('tokens')}</span>
                     </div>`
                 ).join('');
             }
@@ -1008,7 +1020,6 @@ function updateFileDetails(file, type, data) {
 function clearFileDetails() {
     fileDetails = {
         processed: [],
-        skipped: [],
         characters: [],
         tokens: []
     };
