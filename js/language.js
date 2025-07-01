@@ -67,7 +67,7 @@ const TRANSLATIONS = {
         gitignoreFoundAuto: '自动检测到.gitignore文件，已应用{0}条规则',
         ignoreGit: '忽略.git文件夹',
         ignoreGitDesc: '跳过.git文件夹及其中的版本控制文件',
-        stepUpload: '选择文件',
+        stepUpload: '选择文件或文件夹',
         stepOptions: '配置选项',
         stepStart: '开始处理',
         advancedSettings: '高级设置',
@@ -187,7 +187,7 @@ const TRANSLATIONS = {
         gitignoreFoundAuto: 'Automatically detected .gitignore file, {0} rules applied',
         ignoreGit: 'Ignore .git Folder',
         ignoreGitDesc: 'Skip .git folder and version control files',
-        stepUpload: 'Select Files',
+        stepUpload: 'Select Files or Folders',
         stepOptions: 'Configure Options',
         stepStart: 'Start Processing',
         advancedSettings: 'Advanced Settings',
@@ -213,7 +213,7 @@ const TRANSLATIONS = {
         folderNamePlaceholder: 'One folder name per line',
         extensionPlaceholder: '.jpg\n.png\n.mp4',
         selectFolder: 'Select Folder',
-        selectFiles: 'Select Files',
+        selectFiles: 'Select Files(Fo',
         selectGitignore: 'Select .gitignore',
         noFileSelected: 'No file selected',
         folderSelected: 'Folder selected',
@@ -243,7 +243,7 @@ const TRANSLATIONS = {
 };
 
 // 当前语言设置
-let currentLang = 'en';
+let currentLang = 'zh';
 
 // 语言切换函数
 function toggleLanguage() {
