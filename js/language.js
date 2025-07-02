@@ -1,7 +1,7 @@
 // 语言配置和翻译管理模块
 const TRANSLATIONS = {
     zh: {
-        title: '代码文件内容提取与统计工具',
+        title: 'CodeMerge',
         folderUpload: '文件夹上传',
         folderUploadDesc: '选择整个文件夹进行分析',
         fileUpload: '文件上传',
@@ -45,7 +45,7 @@ const TRANSLATIONS = {
         downloadBtn: '下载合并内容',
         copyAreaHint: '点击复制按钮复制内容',
         copyAreaPlaceholder: '处理完成后的内容将显示在这里...',
-        description: '这是一个帮助你分析代码文件的工具。可以统计字符数、计算不同模型的Token数量，并支持导出合并后的内容。适用于需要估算API调用成本或批量处理代码文件的场景。',
+        description: '一键合并代码结构，为 AI 提供完整上下文',
         folderStructure: '文件夹结构',
         structureAreaHint: '文件夹树状结构',
         processingMode: '处理模式',
@@ -118,10 +118,21 @@ const TRANSLATIONS = {
         noFileSelected: '未选择文件',
         compressionError: '压缩代码时出错',
         fileReadFailed: '文件读取失败',
-        downloadFileName: '文件内容汇总_'
+        downloadFileName: '文件内容汇总_',
+        usageGuide: '使用指南',
+        usageGuideDesc: '三步快速开始',
+        step1Title: '选择文件',
+        step1Desc: '选择文件夹或单个文件进行分析',
+        step2Title: '配置选项',
+        step2Desc: '设置处理模式和输出格式',
+        step3Title: '开始处理',
+        step3Desc: '点击按钮开始分析和合并文件',
+        getStarted: '现在就开始吧！',
+        // repomix参考标注
+        refRepomix: '参考repomix'
     },
     en: {
-        title: 'Code File Content Extraction and Statistics Tool',
+        title: 'CodeMerge',
         folderUpload: 'Folder Upload',
         folderUploadDesc: 'Select an entire folder for analysis',
         fileUpload: 'File Upload',
@@ -165,7 +176,7 @@ const TRANSLATIONS = {
         downloadBtn: 'Download Merged Content',
         copyAreaHint: 'Click copy button to copy content',
         copyAreaPlaceholder: 'Processed content will be displayed here...',
-        description: 'This tool helps you analyze code files by counting characters, calculating tokens for different models, and exporting merged content. Perfect for estimating API costs or batch processing code files.',
+        description: 'One-click code merge, full context for AI',
         folderStructure: 'Folder Structure',
         structureAreaHint: 'Folder tree structure',
         processingMode: 'Processing Mode',
@@ -213,7 +224,7 @@ const TRANSLATIONS = {
         folderNamePlaceholder: 'One folder name per line',
         extensionPlaceholder: '.jpg\n.png\n.mp4',
         selectFolder: 'Select Folder',
-        selectFiles: 'Select Files(Fo',
+        selectFiles: 'Select Files',
         selectGitignore: 'Select .gitignore',
         noFileSelected: 'No file selected',
         folderSelected: 'Folder selected',
@@ -238,7 +249,18 @@ const TRANSLATIONS = {
         noFileSelected: 'No file selected',
         compressionError: 'Error compressing code',
         fileReadFailed: 'File read failed',
-        downloadFileName: 'content_summary_'
+        downloadFileName: 'content_summary_',
+        usageGuide: 'Quick Start Guide',
+        usageGuideDesc: 'Get started in 3 easy steps',
+        step1Title: 'Select Files',
+        step1Desc: 'Choose folders or individual files to analyze',
+        step2Title: 'Configure Options',
+        step2Desc: 'Set processing mode and output format',
+        step3Title: 'Start Processing',
+        step3Desc: 'Click the button to analyze and merge files',
+        getStarted: 'Let\'s get started!',
+        // repomix参考标注
+        refRepomix: 'ref repomix'
     }
 };
 

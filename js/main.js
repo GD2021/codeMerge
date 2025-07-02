@@ -1,5 +1,3 @@
-
-
 // 修改黑名单配置相关代码
 let BLACKLIST_FOLDERS = [
     'node_modules',
@@ -145,8 +143,6 @@ function clearAllFiles() {
     selectedFilesContainer.classList.add('hidden');
     updateFileStatus([]);
 }
-
-
 
 // 使用正则表达式计算Token数的函数
 function roughTokenCount(text) {
@@ -349,6 +345,12 @@ async function processFiles() {
     const status = document.getElementById('status');
     // 保留黑名单更新的消息，不清空状态区域
     // status.innerHTML = '';
+
+    // 隐藏使用指南卡片，为处理结果腾出空间
+    const usageGuideCard = document.getElementById('usageGuideCard');
+    if (usageGuideCard) {
+        usageGuideCard.classList.add('hidden');
+    }
 
     // 显示进度卡片和统计卡片
     document.getElementById('progressCard').classList.remove('hidden');
@@ -839,6 +841,13 @@ function resetPage() {
     document.getElementById('progressCard').classList.add('hidden');
     document.getElementById('statsCard').classList.add('hidden');
     document.getElementById('resultCard').classList.add('hidden');
+    document.getElementById('folderStructureCard').classList.add('hidden');
+
+    // 重新显示使用指南卡片
+    const usageGuideCard = document.getElementById('usageGuideCard');
+    if (usageGuideCard) {
+        usageGuideCard.classList.remove('hidden');
+    }
 
     // 重置统计数据
     totalFiles = 0;
@@ -957,8 +966,6 @@ function showFileDetails(type) {
                 ).join('');
             }
             break;
-
-
 
         case 'characters':
             title = getTranslation('characterStats');

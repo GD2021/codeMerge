@@ -1,7 +1,6 @@
-# 代码文件内容提取与统计工具
-# Code File Content Extraction and Statistics Tool
+# CodeMerge
 
-[中文](#代码文件内容提取与统计工具) | [English](#code-file-content-extraction-and-statistics-tool-1)
+[中文](#codemerge) | [English](#codemerge-1)
 
 ---
 
@@ -9,25 +8,29 @@
 
 [![Star History Chart](https://api.star-history.com/svg?repos=TownBoats/codeMerge&type=Date)](https://www.star-history.com/#TownBoats/codeMerge&Date)
 
-# 代码文件内容提取与统计工具
+# CodeMerge
 
-一个用于提取和统计代码文件内容的Web工具，特别适合准备用于大语言模型（如GPT、Claude）的代码分析。
+一键合并代码结构，为 AI 提供完整上下文。
 
 ## 界面预览
+🌐 [在线演示](https://code-merge-olive.vercel.app/)
 
-![Main Interface](./images/img1.png)
-*Main Interface - Supporting file upload and configuration*
+![Initial Interface](./images/initial.png)
+*初始界面 - 支持文件上传和配置选项*
 
-![Statistics Result](./images/img2.png)
-*Statistics Result - Showing detailed token and character statistics*
+![Configuration Interface](./images/initial2.png)
+*配置界面 - 使用指南和处理选项*
+
+![Processing Result](./images/processed.png)
+*处理结果 - 显示详细的统计信息和合并内容*
 
 ## 功能特点
 
 - 📁 支持文件夹和单个文件上传
-- 🔍 自动识别和过滤二进制文件
+- 🔍 自动识别和过滤二进制文件、图片等
 - 📊 提供详细的统计信息
   - 字符数统计
-  - 多种模型的Token计算（GPT-3.5、GPT-4、Claude）
+  - Token计算
 - ⚡ 代码压缩功能
 - 🚫 智能文件夹过滤系统
   - 支持从.gitignore文件自动读取忽略规则
@@ -35,7 +38,11 @@
     - 支持单独上传.gitignore文件直接应用
   - 专门选项控制是否忽略.git文件夹
   - 自定义黑名单文件夹设置
-- 📥 自动生成汇总文本文件
+- 📥 多种输出格式支持（感谢[repomix](https://github.com/yamadashy/repomix)）
+  - 默认格式：原始格式，包含文件统计信息
+  - XML格式：结构化XML格式，包含目录树
+  - 纯文本格式：简洁的文本格式，使用分隔符
+  - Markdown格式：支持语法高亮的Markdown格式
 - 🌲 自动生成文件夹树状结构视图
   - 直观展示项目文件组织
   - 支持复制树状结构
@@ -44,7 +51,7 @@
   - 完整处理模式：提取文件树和合并文件内容
   - 仅文件树模式：只生成项目结构，不处理文件内容
 
-🌐 [在线演示](http://codemerge.131.996h.cn/)
+🌐 [在线演示](https://code-merge-olive.vercel.app/)
 
 ## 支持的文件类型
 
@@ -87,6 +94,7 @@
 
 3. **处理选项设置**
    - 选择处理模式：完整处理或仅生成文件树
+   - 选择输出格式：默认格式、XML格式、纯文本格式或Markdown格式
    - 选择是否使用.gitignore文件中的规则
    - 选择是否忽略.git文件夹
    - 自定义黑名单文件夹
@@ -105,16 +113,38 @@
 - 处理的文件总数
 - 跳过的文件数
 - 总字符数
-- 各模型的预估Token数
-  - GPT-3.5
-  - GPT-4
-  - Claude
+- 预估Token数
 
 ## 本地部署
 
-1. 下载项目文件
-2. 直接在浏览器中打开 `index.html` 文件
-3. 无需安装其他依赖，所有必要的库都通过CDN加载
+由于项目使用了ES6模块，无法直接通过文件系统打开，需要通过HTTP服务器运行。
+
+### 方案一：Python HTTP服务器（推荐）
+
+1. 下载项目文件到本地
+2. 在项目根目录打开终端/命令行
+3. 运行以下命令之一：
+   ```bash
+   # Python 3
+   python -m http.server 8000
+   
+   # 或者 Python 2
+   python -m SimpleHTTPServer 8000
+   ```
+4. 在浏览器中访问 `http://localhost:8000`
+
+### 方案二：VSCode Live Server扩展
+
+1. 在VSCode中安装 "Live Server" 扩展
+2. 下载项目文件并在VSCode中打开项目文件夹
+3. 右键点击 `index.html` 文件
+4. 选择 "Open with Live Server"
+5. 浏览器会自动打开并访问项目
+
+### 注意事项
+- 无需安装其他依赖，所有必要的库都通过CDN加载
+- 确保选择的端口没有被其他应用占用
+- 按 `Ctrl+C` 可停止Python服务器
 
 ## 注意事项
 
@@ -128,7 +158,6 @@
 - HTML5
 - Tailwind CSS
 - JavaScript
-- GPT-3 Tokenizer
 - js-beautify
 
 ## 贡献
@@ -141,17 +170,21 @@ MIT License
 
 ---
 
-# Code File Content Extraction and Statistics Tool
+# CodeMerge
 
-A web-based tool for extracting and analyzing code file contents, particularly suitable for preparing code analysis for Large Language Models (like GPT, Claude).
+One-click code merge, full context for AI.
 
 ## Interface Preview
+🌐 [Online Demo](https://code-merge-olive.vercel.app/)
 
-![Main Interface](./images/img1.png)
-*Main Interface - Supporting file upload and configuration*
+![Initial Interface](./images/initial.png)
+*Initial Interface - Supporting file upload and configuration options*
 
-![Statistics Result](./images/img2.png)
-*Statistics Result - Showing detailed token and character statistics*
+![Configuration Interface](./images/initial2.png)
+*Configuration Interface - Usage guide and processing options*
+
+![Processing Result](./images/processed.png)
+*Processing Result - Showing detailed statistics and merged content*
 
 ## Features
 
@@ -159,7 +192,7 @@ A web-based tool for extracting and analyzing code file contents, particularly s
 - 🔍 Automatic binary file detection and filtering
 - 📊 Detailed statistics
   - Character count
-  - Token calculation for various models (GPT-3.5, GPT-4, Claude)
+  - Token calculation
 - ⚡ Code compression functionality
 - 🚫 Smart folder filtering system
   - Support for automatically reading rules from .gitignore files
@@ -167,7 +200,11 @@ A web-based tool for extracting and analyzing code file contents, particularly s
     - Support for uploading standalone .gitignore files
   - Dedicated option to control ignoring .git folder
   - Custom blacklist folder settings
-- 📥 Automatic summary text file generation
+- 📥 Multiple output format support (thanks to [repomix](https://github.com/yamadashy/repomix))
+  - Default format: Original format with file statistics
+  - XML format: Structured XML format with directory tree
+  - Plain text format: Clean text format with separators
+  - Markdown format: Markdown format with syntax highlighting
 - 🌲 Folder tree structure visualization
   - Intuitive project file organization display
   - Copy tree structure functionality
@@ -176,7 +213,7 @@ A web-based tool for extracting and analyzing code file contents, particularly s
   - Full processing: Extract file tree and merge file contents
   - Tree-only mode: Only generate project structure without processing file contents
 
-🌐 [Online Demo](http://codemerge.131.996h.cn/)
+🌐 [Online Demo](https://code-merge-olive.vercel.app/)
 
 ## Supported File Types
 
@@ -219,6 +256,7 @@ A web-based tool for extracting and analyzing code file contents, particularly s
 
 3. **Processing Options Setup**
    - Choose processing mode: Full processing or Tree-only
+   - Choose output format: Default, XML, Plain text, or Markdown format
    - Choose whether to use rules from .gitignore file
    - Choose whether to ignore .git folder
    - Customize blacklist folders
@@ -237,16 +275,38 @@ The tool provides the following statistics:
 - Total files processed
 - Number of files skipped
 - Total character count
-- Estimated token count for various models
-  - GPT-3.5
-  - GPT-4
-  - Claude
+- Estimated token count
 
 ## Local Deployment
 
-1. Download project files
-2. Open `index.html` directly in your browser
-3. No additional dependencies needed, all required libraries are loaded via CDN
+Since the project uses ES6 modules, it cannot be opened directly through the file system and requires an HTTP server.
+
+### Option 1: Python HTTP Server (Recommended)
+
+1. Download project files to local directory
+2. Open terminal/command prompt in the project root directory
+3. Run one of the following commands:
+   ```bash
+   # Python 3
+   python -m http.server 8000
+   
+   # Or Python 2
+   python -m SimpleHTTPServer 8000
+   ```
+4. Access `http://localhost:8000` in your browser
+
+### Option 2: VSCode Live Server Extension
+
+1. Install "Live Server" extension in VSCode
+2. Download project files and open the project folder in VSCode
+3. Right-click on `index.html` file
+4. Select "Open with Live Server"
+5. Browser will automatically open and access the project
+
+### Notes
+- No additional dependencies needed, all required libraries are loaded via CDN
+- Ensure the selected port is not occupied by other applications
+- Press `Ctrl+C` to stop the Python server
 
 ## Notes
 
@@ -260,7 +320,6 @@ The tool provides the following statistics:
 - HTML5
 - Tailwind CSS
 - JavaScript
-- GPT-3 Tokenizer
 - js-beautify
 
 ## Contributing

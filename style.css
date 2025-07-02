@@ -175,14 +175,13 @@ button {
 /* 选项卡片选中状态 */
 input[type="radio"]:checked + div,
 input[type="checkbox"]:checked + div {
-    background-color: rgba(59, 130, 246, 0.05);
+    /* 移除背景色，保持清爽 */
 }
 
 /* Radio button 选中状态样式 */
 /* Output Format 选中状态 */
 input[name="outputFormat"]:checked + div {
-    --tw-bg-opacity: 1;
-    background-color: rgb(219 234 254 / var(--tw-bg-opacity)); /* bg-blue-100 */
+    /* 移除文字背景色，只保留边框和容器背景 */
 }
 
 label:has(input[name="outputFormat"]:checked) {
@@ -198,8 +197,7 @@ label:has(input[name="outputFormat"]:checked) {
 
 /* Processing Mode 选中状态 */
 input[name="processingMode"]:checked + div {
-    --tw-bg-opacity: 1;
-    background-color: rgb(187 247 208 / var(--tw-bg-opacity)); /* bg-green-100 */
+    /* 移除文字背景色，只保留边框和容器背景 */
 }
 
 label:has(input[name="processingMode"]:checked) {
