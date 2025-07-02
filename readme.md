@@ -177,13 +177,13 @@ One-click code merge, full context for AI.
 ## Interface Preview
 🌐 [Online Demo](https://code-merge-olive.vercel.app/)
 
-![Initial Interface](./images/initial.png)
+![Initial Interface](./images/initial-en.png)
 *Initial Interface - Supporting file upload and configuration options*
 
-![Configuration Interface](./images/initial2.png)
+![Configuration Interface](./images/initial2-en.png)
 *Configuration Interface - Usage guide and processing options*
 
-![Processing Result](./images/processed.png)
+![Processing Result](./images/processed-en.png)
 *Processing Result - Showing detailed statistics and merged content*
 
 ## Features
