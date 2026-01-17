@@ -13,7 +13,7 @@
 一键合并代码结构，为 AI 提供完整上下文。
 
 ## 界面预览
-🌐 [在线演示](https://code-merge-olive.vercel.app/)
+🌐 [在线演示](https://codemerge.townboats.work/)
 
 ![Initial Interface](./images/initial.png)
 *初始界面 - 支持文件上传和配置选项*
@@ -51,7 +51,7 @@
   - 完整处理模式：提取文件树和合并文件内容
   - 仅文件树模式：只生成项目结构，不处理文件内容
 
-🌐 [在线演示](https://code-merge-olive.vercel.app/)
+🌐 [在线演示](https://codemerge.townboats.work/)
 
 ## 支持的文件类型
 
@@ -175,7 +175,7 @@ MIT License
 One-click code merge, full context for AI.
 
 ## Interface Preview
-🌐 [Online Demo](https://code-merge-olive.vercel.app/)
+🌐 [Online Demo](https://codemerge.townboats.work/)
 
 ![Initial Interface](./images/initial-en.png)
 *Initial Interface - Supporting file upload and configuration options*
@@ -213,7 +213,7 @@ One-click code merge, full context for AI.
   - Full processing: Extract file tree and merge file contents
   - Tree-only mode: Only generate project structure without processing file contents
 
-🌐 [Online Demo](https://code-merge-olive.vercel.app/)
+🌐 [Online Demo](https://codemerge.townboats.work/)
 
 ## Supported File Types
 
